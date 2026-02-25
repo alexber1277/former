@@ -18,6 +18,7 @@ class App {
         void LoadMeshes();
 
         void CalcFPS();
+        void PreCalculate();
 
         void RenderFullscreenQuad();
         void ShowGrid(GLuint shader, int lineCount);

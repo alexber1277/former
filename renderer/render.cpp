@@ -57,6 +57,16 @@ GLuint Render::CompileComputeShader(const std::string& path) {
     return shader;
 }
 
+void Render::ResizeRenderTexture(int width, int height) {
+    glBindTexture(GL_TEXTURE_2D, BaseTexture);
+    glTexImage2D(
+        GL_TEXTURE_2D,0,GL_RGBA32F,
+        width,height,0,GL_RGBA,
+        GL_FLOAT,nullptr
+    );
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void Render::CreateRenderTexture(int ScreenWidth, int ScreenHeight) {
     glGenTextures(1, &BaseTexture);
     glBindTexture(GL_TEXTURE_2D, BaseTexture);

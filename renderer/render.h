@@ -12,6 +12,7 @@ class Render {
         void DrawFullscreen();
         void ClearCompute(int ScreenWidth, int ScreenHeight);
         void RunCompute(int ScreenWidth, int ScreenHeight);
+        void ResizeRenderTexture(int width, int height);
         std::string LoadFile(const std::string& path);
         GLuint LoadCMShader(const std::string& path);
         GLuint CompileComputeShader(const std::string& path);

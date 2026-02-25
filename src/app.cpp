@@ -99,6 +99,7 @@ void App::BaseCallback() {
             if (app) {
                 app->ScreenWidth = width;
                 app->ScreenHeight = height;
+                app->render->ResizeRenderTexture(width,height);
             }
         }
     );
@@ -127,7 +128,7 @@ void App::BaseCallback() {
 void App::CalcFPS() {
     currentFrameTime = glfwGetTime();
     double currDelta = currentFrameTime - previousFrameTime;
-    if (currentFrameTime - lastTitleUpdate >= 0.5) {
+    if (currentFrameTime - lastTitleUpdate >= 0.3) {
         if (currDelta > 0) {
             fps = std::to_string((int)(1.0 / currDelta));
             lastTitleUpdate = currentFrameTime;
@@ -216,12 +217,20 @@ void App::LoadMeshes() {
     meshes[meshes.size() - 1].Position = glm::vec3(2.0f, 2.0f, 2.0f);
 }
 
+void App::PreCalculate() {
+    CalcFPS();
+    std::string title = nameApp + " [" + fps+ "]";
+    glfwSetWindowTitle(window, title.c_str());
+}
+
 int App::StartedRT() {
     glViewport(0, 0, ScreenWidth, ScreenHeight);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+        PreCalculate();
         render->RunCompute(ScreenWidth,ScreenHeight);
         glfwSwapBuffers(window);
     }
     return 0;
 }
+
