@@ -1,11 +1,14 @@
 #include "render.h"
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <stdexcept>
 #include <vector>
 
-GLuint Render::LoadCMShader(const std::string& path) {
+#include "glm/vec4.hpp"
+
+GLuint Render::LoadCmpShader(const std::string& path) {
     GLuint shader = CompileComputeShader("shaders/"+path);
     GLuint program = glCreateProgram();
     glAttachShader(program, shader);
@@ -25,6 +28,17 @@ GLuint Render::LoadCMShader(const std::string& path) {
     glDetachShader(program, shader);
     glDeleteShader(shader);
     return program;
+}
+
+void Render::Resie() {
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
+    glBindTexture(GL_TEXTURE_2D, TEXCompShader);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ScreenWidth, ScreenHeight,0, GL_RGBA, GL_FLOAT, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Render::Log(const std::string& msg) {
+    std::cout << msg << std::endl;
 }
 
 std::string Render::LoadFile(const std::string& path) {
@@ -57,59 +71,73 @@ GLuint Render::CompileComputeShader(const std::string& path) {
     return shader;
 }
 
-void Render::ResizeRenderTexture(int width, int height) {
-    glBindTexture(GL_TEXTURE_2D, BaseTexture);
-    glTexImage2D(
-        GL_TEXTURE_2D,0,GL_RGBA32F,
-        width,height,0,GL_RGBA,
-        GL_FLOAT,nullptr
-    );
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
+bool Render::CreatePipeline() {
+    ComputeShader = LoadCmpShader("base.comp");
+    if (ComputeShader == 0 ) {
+        Log("Failed to load compute shader");
+        return false;
+    }
+    if (QuadShader == 0) {
+        Log("Failed to load quad shader");
+        return false;
+    }
 
-void Render::CreateRenderTexture(int ScreenWidth, int ScreenHeight) {
-    glGenTextures(1, &BaseTexture);
-    glBindTexture(GL_TEXTURE_2D, BaseTexture);
-    glTexImage2D(
-        GL_TEXTURE_2D,0,
-        GL_RGBA32F,ScreenWidth,ScreenHeight,
-        0,GL_RGBA,GL_FLOAT,nullptr
-    );
+    UResLoc = glGetUniformLocation(ComputeShader, "uResolution");
+    if (UResLoc < 0) {
+        Log("Uniform uResolution not found in compute shader");
+        return false;
+    }
+
+    UScreenTex = glGetUniformLocation(QuadShader, "screenTex");
+    if (UScreenTex < 0) {
+        Log("Uniform screenTex not found in quad shader");
+        return false;
+    }
+
+    glUseProgram(QuadShader);
+    glUniform1i(UScreenTex, 0);
+    glUseProgram(0);
+
+    glGenVertexArrays(1, &QuadVAO);
+    glBindVertexArray(QuadVAO);
+    glBindVertexArray(0);
+
+    glGenTextures(1, &TEXCompShader);
+    glBindTexture(GL_TEXTURE_2D, TEXCompShader);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ScreenWidth, ScreenHeight,0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glBindVertexArray(BaseQuadVAO);
-    glBindVertexArray(0);
-    BaseResolutLoc = glGetUniformLocation(BaseShader, "uResolution");
+
+    return true;
 }
 
-void Render::ClearCompute(int ScreenWidth, int ScreenHeight) {
+void Render::RunCompute(glm::vec4 colorClear) {
+
+    // clear buffer
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    glViewport(0, 0, ScreenWidth, ScreenHeight);
-    glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
+    glClearColor(colorClear.r, colorClear.g, colorClear.b, colorClear.a);
     glClear(GL_COLOR_BUFFER_BIT);
 
-}
-
-void Render::RunCompute(int ScreenWidth, int ScreenHeight) {
-    glUseProgram(BaseShader);
-    glUniform2f(BaseResolutLoc,ScreenWidth,ScreenHeight);
-    glBindImageTexture(0,BaseTexture,0,GL_FALSE,0,GL_WRITE_ONLY,GL_RGBA32F);
-    glDispatchCompute((ScreenWidth + 15) / 16,(ScreenHeight + 15) / 16,1);
+    // run compute shader
+    glUseProgram(ComputeShader);
+    glUniform2f(UResLoc, ScreenWidth, ScreenHeight);
+    glBindImageTexture(0, TEXCompShader, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glDispatchCompute((ScreenWidth + 15) / 16, (ScreenHeight + 15) / 16, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    ClearCompute(ScreenWidth, ScreenHeight);
-    DrawFullscreen();
-}
 
-void Render::DrawFullscreen() {
-    glUseProgram(BaseQuadShader);
-    glBindVertexArray(BaseQuadVAO);
+    // render fullscreen quad
+    glUseProgram(QuadShader);
+    glBindVertexArray(QuadVAO);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, BaseTexture);
-    glUniform1i(glGetUniformLocation(BaseQuadShader, "screenTex"),0);
+    glBindTexture(GL_TEXTURE_2D, TEXCompShader);
+    glUniform1i(UScreenTex, 0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
+
+    // unbind shader
+    glUseProgram(0);
 }

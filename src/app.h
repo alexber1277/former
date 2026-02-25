@@ -54,6 +54,6 @@ class App {
 
         std::string nameApp = "RTNV";
 
-        double lastTitleUpdate;
+        double lastTitleUpdate = 0;
 
 };

@@ -59,37 +59,37 @@ glm::mat4 Mesh::GetModelMatrix() const {
 }
 
 void Mesh::UploadToGPU() {
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    std::vector<float> vertexData;
-    vertexData.reserve(m_Positions.size() * 6);
-    for (size_t i = 0; i < m_Positions.size(); ++i) {
-        vertexData.push_back(m_Positions[i].x);
-        vertexData.push_back(m_Positions[i].y);
-        vertexData.push_back(m_Positions[i].z);
-
-        vertexData.push_back(m_Normals[i].x);
-        vertexData.push_back(m_Normals[i].y);
-        vertexData.push_back(m_Normals[i].z);
-    }
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
-    std::vector<unsigned int> indices;
-    indices.reserve(m_Indices.size() * 3);
-    for (auto& tri : m_Indices) {
-        indices.push_back(tri.x);
-        indices.push_back(tri.y);
-        indices.push_back(tri.z);
-    }
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
+    // glGenVertexArrays(1, &VAO);
+    // glBindVertexArray(VAO);
+    // std::vector<float> vertexData;
+    // vertexData.reserve(m_Positions.size() * 6);
+    // for (size_t i = 0; i < m_Positions.size(); ++i) {
+    //     vertexData.push_back(m_Positions[i].x);
+    //     vertexData.push_back(m_Positions[i].y);
+    //     vertexData.push_back(m_Positions[i].z);
+    //
+    //     vertexData.push_back(m_Normals[i].x);
+    //     vertexData.push_back(m_Normals[i].y);
+    //     vertexData.push_back(m_Normals[i].z);
+    // }
+    // glGenBuffers(1, &VBO);
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
+    // std::vector<unsigned int> indices;
+    // indices.reserve(m_Indices.size() * 3);
+    // for (auto& tri : m_Indices) {
+    //     indices.push_back(tri.x);
+    //     indices.push_back(tri.y);
+    //     indices.push_back(tri.z);
+    // }
+    // glGenBuffers(1, &EBO);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // glBindVertexArray(0);
 }
 
 void Mesh::Draw(Camera* camera) {

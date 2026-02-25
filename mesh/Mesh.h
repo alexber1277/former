@@ -22,9 +22,9 @@ class Mesh {
 
     private:
 
-        std::vector<glm::vec4> m_Positions;
+        std::vector<glm::vec3> m_Positions;
         std::vector<glm::vec3> m_Normals;
-        std::vector<glm::uvec3> m_Indices;
+        std::vector<glm::uint32> m_Indices;
 
         GLuint VAO = 0;
         GLuint VBO  = 0;

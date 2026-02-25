@@ -24,6 +24,8 @@ set(SOURCES
         mesh/Mesh.h
         renderer/render.cpp
         renderer/render.h
+        object/object.cpp
+        object/object.h
 )
 
 find_package(OpenGL REQUIRED)

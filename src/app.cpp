@@ -61,11 +61,10 @@ App::App(std::string name) {
     camera = new Camera();
     input = new Input(window);
 
-    render = new Render(window);
-    render->BaseShader = render->LoadCMShader("base.comp");
-    render->CreateRenderTexture(ScreenWidth, ScreenHeight);
-    if (!LoadShaderItem("quad", render->BaseQuadShader)) {
-        throw std::runtime_error("Error loading quad shader");
+    render = new Render(window, ScreenWidth, ScreenHeight);
+    LoadShaderItem("quad", render->QuadShader);
+    if (!render->CreatePipeline()) {
+        throw std::runtime_error("Failed to create compute pipeline");
     }
 
     BaseCallback();
@@ -99,7 +98,9 @@ void App::BaseCallback() {
             if (app) {
                 app->ScreenWidth = width;
                 app->ScreenHeight = height;
-                app->render->ResizeRenderTexture(width,height);
+                app->render->ScreenWidth = width;
+                app->render->ScreenHeight = height;
+                app->render->Resie();
             }
         }
     );
@@ -117,24 +118,12 @@ void App::BaseCallback() {
         }
     );
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
-        App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
-        if (app) {
-            app->input->SetScroll(yoffset);
+            App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
+            if (app) {
+                app->input->SetScroll(yoffset);
+            }
         }
-    }
-);
-}
-
-void App::CalcFPS() {
-    currentFrameTime = glfwGetTime();
-    double currDelta = currentFrameTime - previousFrameTime;
-    if (currentFrameTime - lastTitleUpdate >= 0.3) {
-        if (currDelta > 0) {
-            fps = std::to_string((int)(1.0 / currDelta));
-            lastTitleUpdate = currentFrameTime;
-        }
-    }
-    previousFrameTime = currentFrameTime;
+    );
 }
 
 std::string App::LoadFile(std::string path) {
@@ -217,6 +206,18 @@ void App::LoadMeshes() {
     meshes[meshes.size() - 1].Position = glm::vec3(2.0f, 2.0f, 2.0f);
 }
 
+void App::CalcFPS() {
+    double now = glfwGetTime();
+    double delta = now - previousFrameTime;
+    previousFrameTime = now;
+    if (now - lastTitleUpdate >= 0.3) {
+        if (delta > 0.0) {
+            fps = std::to_string(int(1.0 / delta));
+        }
+        lastTitleUpdate = now;
+    }
+}
+
 void App::PreCalculate() {
     CalcFPS();
     std::string title = nameApp + " [" + fps+ "]";
@@ -228,7 +229,7 @@ int App::StartedRT() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
-        render->RunCompute(ScreenWidth,ScreenHeight);
+        render->RunCompute(background);
         glfwSwapBuffers(window);
     }
     return 0;
