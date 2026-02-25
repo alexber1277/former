@@ -24,21 +24,8 @@ class App {
 
         void CreateOptBuffers();
 
-        GLuint depthFBO;
-        GLuint depthTEX;
-        GLuint colorTEX = 0;
-        GLuint depthRBT = 0;
-        GLuint quadVAO = 0;
-        GLuint quadVBO = 0;
-
         static void Resize(GLFWwindow* wind, int width, int height);
         std::string LoadFile(std::string name);
-
-        GLuint baseShader;
-        GLuint geomShader;
-        GLuint gridVao;
-
-        glm::vec3 kernelSSAO[64];
 
         std::string fps;
 
