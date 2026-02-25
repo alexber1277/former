@@ -5,13 +5,14 @@
 #include <GLFW/glfw3.h>
 #include "../camera/camera.h"
 #include "../input/input.h"
+#include "../renderer/render.h"
 
 class App {
     public:
         App(std::string name);
 
-        int Started(); // base render vert/frag shaders
-        int StartedRT(); // ray traced render from compute shader
+        int Started();
+        int StartedRT();
         void Calculate();
         void BaseCallback();
         void LoadMeshes();
@@ -38,6 +39,7 @@ class App {
         std::string windowName;
         Camera* camera;
         Input* input;
+        Render* render;
 
         std::vector<Mesh> meshes;
 

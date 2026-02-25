@@ -1,0 +1,15 @@
+#version 460 core
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba32f, binding = 0) uniform image2D destTex;
+uniform vec2 uResolution;
+
+void main() {
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+    if (pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y)){
+        return;
+    }
+    vec2 uv = vec2(pixel) / uResolution;
+    vec3 color = vec3(uv.x,uv.y,0.2);
+    imageStore(destTex, pixel, vec4(color, 1.0));
+}

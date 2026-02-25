@@ -61,6 +61,13 @@ App::App(std::string name) {
     camera = new Camera();
     input = new Input(window);
 
+    render = new Render(window);
+    render->BaseShader = render->LoadCMShader("base.comp");
+    render->CreateRenderTexture(ScreenWidth, ScreenHeight);
+    if (!LoadShaderItem("quad", render->BaseQuadShader)) {
+        throw std::runtime_error("Error loading quad shader");
+    }
+
     BaseCallback();
 
     std::cout << "========================================================" << std::endl;
@@ -213,13 +220,8 @@ int App::StartedRT() {
     glViewport(0, 0, ScreenWidth, ScreenHeight);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-
-
-
+        render->RunCompute(ScreenWidth,ScreenHeight);
         glfwSwapBuffers(window);
     }
     return 0;
 }
-
-
-
