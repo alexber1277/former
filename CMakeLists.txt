@@ -12,6 +12,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG v1.92.6-docking
+)
+FetchContent_MakeAvailable(imgui)
+
 set(SOURCES
         main.cpp
         src/app.cpp
@@ -24,13 +31,14 @@ set(SOURCES
         renderer/render.h
         object/object.cpp
         object/object.h
+        gui/gui.cpp
+        gui/gui.h
 )
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
 find_package(assimp REQUIRED)
-
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -40,6 +48,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
         glm::glm
         assimp::assimp
+        imgui
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends
 )
 
 add_custom_command(TARGET RTNV POST_BUILD
