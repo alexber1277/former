@@ -39,11 +39,15 @@ class Render {
 
         // position and rotation cam
         GLuint UCamPosLoc;
-        GLuint UCamRotLoc;
+        GLuint UCamTargLoc;
+        GLuint UCamUpLoc;
+        GLuint UCamFovLoc;
 
         // settings cam
         glm::vec3 camPos;
-        glm::mat3 camRot;
+        glm::vec3 camTarg;
+        glm::vec3 camUp;
+        float camFov;
 
     private:
         GLFWwindow* m_window;

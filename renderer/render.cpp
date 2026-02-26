@@ -84,7 +84,9 @@ bool Render::CreatePipeline() {
     }
 
     UCamPosLoc = glGetUniformLocation(ComputeShader, "uCamPos");
-    UCamRotLoc = glGetUniformLocation(ComputeShader, "uCamRot");
+    UCamTargLoc = glGetUniformLocation(ComputeShader, "uCamTarg");
+    UCamUpLoc = glGetUniformLocation(ComputeShader, "uCamUp");
+    UCamFovLoc = glGetUniformLocation(ComputeShader, "uCamFov");
 
     UResLoc = glGetUniformLocation(ComputeShader, "uResolution");
     if (UResLoc < 0) {
@@ -120,7 +122,9 @@ bool Render::CreatePipeline() {
 
 void Render::SetCamOrig(Camera* camera) {
     camPos = camera->position;
-    camRot = glm::mat3(camera->view);
+    camTarg = camera->target;
+    camUp = camera->up;
+    camFov = camera->fov;
 }
 
 void Render::RunCompute(glm::vec4 colorClear) {
@@ -136,8 +140,10 @@ void Render::RunCompute(glm::vec4 colorClear) {
     glUniform2f(UResLoc, ScreenWidth, ScreenHeight);
 
     // send camera settings
-    glUniform3fv(glGetUniformLocation(ComputeShader, "uCamPos"),1, &camPos[0]);
-    glUniformMatrix3fv(glGetUniformLocation(ComputeShader, "uCamRot"),1, GL_FALSE, &camRot[0][0]);
+    glUniform3fv(UCamPosLoc,1, &camPos[0]);
+    glUniform3fv(UCamTargLoc,1, &camTarg[0]);
+    glUniform3fv(UCamUpLoc,1, &camUp[0]);
+    glUniform1f(UCamFovLoc, camFov);
 
     glBindImageTexture(0, TEXCompShader, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glDispatchCompute((ScreenWidth + 15) / 16, (ScreenHeight + 15) / 16, 1);

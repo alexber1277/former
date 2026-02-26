@@ -15,7 +15,7 @@ class Object {
         // position
         glm::vec3 Position = {0.0f, 0.0f, 0.0f};
         glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
-        glm::vec3 Scale    = {1.0f, 1.0f, 1.0f};
+        glm::vec3 Scale    = {0.1f, 0.1f, 0.1f};
 
         // offset count SSBO
         uint32_t meshOffset;

@@ -31,13 +31,9 @@ void Input::Handlers(Camera* camera) {
         } else {
             camera->Pan((float)GetDeltaX(),(float)GetDeltaY());
         }
-        std::cout << camera->position.x << " " << camera->position.y << " " << camera->position.z << std::endl;
     }
     float scroll = ConsumeScrollDelta();
     if (scroll != 0.0f) {
         camera->Zoom(scroll);
     }
-
-    std::to_string(scroll);
-
 }

@@ -255,8 +255,9 @@ void App::PreCalculate() {
     CalcFPS();
     std::string title = nameApp + " [" + fps+ "]";
     glfwSetWindowTitle(window, title.c_str());
+    input->Update();
     input->Handlers(camera);
-    camera->CamCalculated(ScreenWidth, ScreenHeight);
+    camera->CamCalculated(ScreenWidth,ScreenHeight);
     render->SetCamOrig(camera);
 }
 
@@ -270,4 +271,3 @@ int App::StartedRT() {
     }
     return 0;
 }
-
