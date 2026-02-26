@@ -43,6 +43,10 @@ class Render {
         GLuint UCamUpLoc;
         GLuint UCamFovLoc;
 
+        // settings uniforms
+        GLuint UBackground;
+        GLuint UQuadResolute;
+
         // settings cam
         glm::vec3 camPos;
         glm::vec3 camTarg;

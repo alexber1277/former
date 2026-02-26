@@ -256,7 +256,7 @@ void App::CalcFPS() {
 
 void App::PreCalculate() {
     CalcFPS();
-    std::string title = nameApp + " [" + fps+ "]";
+    std::string title = nameApp + " beta [" + fps+ " FPS]";
     glfwSetWindowTitle(window, title.c_str());
     input->Update();
     input->Handlers(camera);

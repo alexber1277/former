@@ -87,6 +87,7 @@ bool Render::CreatePipeline() {
     UCamTargLoc = glGetUniformLocation(ComputeShader, "uCamTarg");
     UCamUpLoc = glGetUniformLocation(ComputeShader, "uCamUp");
     UCamFovLoc = glGetUniformLocation(ComputeShader, "uCamFov");
+    UBackground = glGetUniformLocation(ComputeShader, "uBackground");
 
     UResLoc = glGetUniformLocation(ComputeShader, "uResolution");
     if (UResLoc < 0) {
@@ -98,6 +99,10 @@ bool Render::CreatePipeline() {
     if (UScreenTex < 0) {
         Log("Uniform screenTex not found in quad shader");
         return false;
+    }
+    UQuadResolute = glGetUniformLocation(QuadShader, "uResolution");
+    if (UQuadResolute < 0) {
+        Log("Uniform screenTex not found in quad shader");
     }
 
     glUseProgram(QuadShader);
@@ -143,6 +148,7 @@ void Render::RunCompute(glm::vec4 colorClear) {
     glUniform3fv(UCamPosLoc,1, &camPos[0]);
     glUniform3fv(UCamTargLoc,1, &camTarg[0]);
     glUniform3fv(UCamUpLoc,1, &camUp[0]);
+    glUniform3fv(UBackground,1, &colorClear[0]);
     glUniform1f(UCamFovLoc, camFov);
 
     glBindImageTexture(0, TEXCompShader, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -155,6 +161,7 @@ void Render::RunCompute(glm::vec4 colorClear) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, TEXCompShader);
     glUniform1i(UScreenTex, 0);
+    glUniform2f(UQuadResolute, ScreenWidth, ScreenHeight);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 
