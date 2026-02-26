@@ -236,6 +236,9 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 
 void App::LoadMeshes() {
     objects = Object::LoadObjs("assets/cube.obj");
+    Object copy = objects[0];
+    copy.Position = glm::vec3(-3.0f, -3.0f, 3.0f);
+    objects.push_back(copy);
     UploadMeshesToGPU();
 }
 
