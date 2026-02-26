@@ -5,6 +5,7 @@
 
 struct Vertex;
 struct Instance;
+struct Material;
 
 class Object {
 
@@ -25,10 +26,7 @@ class Object {
         static std::vector<Object> LoadObjs(const std::string& path);
 
         // material
-        glm::vec4 matBaseColor;
-        float matRoughness;
-        float matMetallic;
-        glm::vec2 matPad;
+        uint32_t materialId;
 
         // get model transform
         [[nodiscard]] glm::mat4 GetModelMatrix() const;
@@ -49,4 +47,11 @@ struct Vertex {
 
 struct Instance {
     glm::mat4 model;
+};
+
+struct Material {
+    glm::vec4 baseColor;
+    float roughness;
+    float metallic;
+    glm::vec2 pad;
 };

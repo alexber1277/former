@@ -5,6 +5,7 @@
 #include "../input/input.h"
 #include "../renderer/render.h"
 #include "../object/object.h"
+#include "../gui/gui.h"
 
 class App {
     public:
@@ -31,8 +32,10 @@ class App {
         std::string fps;
 
         std::vector<Object> objects;
+        std::vector<Material> materials;
         GLuint vertexSSBO = 0;
         GLuint indexSSBO  = 0;
+        GLuint matSSBO = 0;
         void UploadMeshesToGPU();
 
         GLuint CreateGrid(int size = 10, float step = 1.0f);
@@ -45,6 +48,7 @@ class App {
         Camera* camera;
         Input* input;
         Render* render;
+        Gui* gui;
 
         int ScreenWidth;
         int ScreenHeight;

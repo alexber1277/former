@@ -57,6 +57,7 @@ App::App(std::string name) {
 
     camera = new Camera();
     input = new Input(window);
+    gui = new Gui(window);
 
     render = new Render(window, ScreenWidth, ScreenHeight);
     LoadShaderItem("quad", render->QuadShader);
@@ -159,17 +160,6 @@ void App::UploadMeshesToGPU() {
         vertexOffset += static_cast<uint32_t>(obj.vertices.size());
         indexOffset  += static_cast<uint32_t>(obj.indices.size());
     }
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // for (auto& obj : objects) {
-    //     obj.meshOffset = indexOffset;
-    //     globalVertices.insert(globalVertices.end(),obj.vertices.begin(),obj.vertices.end());
-    //     for (uint32_t idx : obj.indices) {
-    //         globalIndices.push_back(idx + vertexOffset);
-    //     }
-    //     obj.meshCount = static_cast<uint32_t>(obj.indices.size());
-    //     vertexOffset += static_cast<uint32_t>(obj.vertices.size());
-    //     indexOffset  += static_cast<uint32_t>(obj.indices.size());
-    // }
     glGenBuffers(1, &vertexSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER,globalVertices.size() * sizeof(Vertex),globalVertices.data(),GL_STATIC_DRAW);
@@ -236,9 +226,6 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 
 void App::LoadMeshes() {
     objects = Object::LoadObjs("assets/cube.obj");
-    Object copy = objects[0];
-    copy.Position = glm::vec3(-3.0f, -3.0f, 3.0f);
-    objects.push_back(copy);
     UploadMeshesToGPU();
 }
 
@@ -269,7 +256,11 @@ int App::StartedRT() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
+
+        objects[0].Position.x += 0.001;
+
         render->RunCompute(background);
+        gui->RenderPanels();
         glfwSwapBuffers(window);
     }
     return 0;

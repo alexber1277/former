@@ -19,6 +19,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+set(IMGUI_SOURCES
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
 set(SOURCES
         main.cpp
         src/app.cpp
@@ -35,6 +44,8 @@ set(SOURCES
         gui/gui.h
 )
 
+list(APPEND SOURCES ${IMGUI_SOURCES})
+
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
@@ -48,7 +59,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
         glm::glm
         assimp::assimp
-        imgui
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

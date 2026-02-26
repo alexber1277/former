@@ -62,19 +62,8 @@ std::vector<Object> Object::LoadObjs(const std::string& path) {
         }
         obj.meshCount = static_cast<uint32_t>(obj.indices.size());
         obj.meshOffset = 0;
-        obj.matBaseColor = glm::vec4(1.0f);
-        obj.matRoughness = 0.5f;
-        obj.matMetallic  = 0.0f;
-        obj.matPad       = glm::vec2(0.0f);
-        if (scene->HasMaterials()) {
-            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-            aiColor3D color(1.f, 1.f, 1.f);
-            if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
-                obj.matBaseColor = glm::vec4(color.r, color.g, color.b, 1.0f);
-            }
-        }
         Instance inst{};
-        inst.model = glm::mat4(1.0f);
+        inst.model = obj.GetModelMatrix();
         obj.instances.push_back(inst);
         objects.push_back(std::move(obj));
     }
