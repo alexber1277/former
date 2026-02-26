@@ -135,6 +135,52 @@ std::string App::LoadFile(std::string path) {
 
 }
 
+
+void App::UploadMeshesToGPU() {
+    std::vector<Vertex> globalVertices;
+    std::vector<uint32_t> globalIndices;
+    uint32_t vertexOffset = 0;
+    uint32_t indexOffset  = 0;
+
+    for (auto& obj : objects) {
+        obj.meshOffset = indexOffset;
+        glm::mat4 model = obj.GetModelMatrix();
+        glm::mat3 normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+        for (auto& v : obj.vertices) {
+            Vertex vert = v;
+            vert.pos = model * vert.pos;
+            vert.normal = glm::vec4(normalMat * glm::vec3(v.normal), 0.0f);
+            globalVertices.push_back(vert);
+        }
+        for (uint32_t idx : obj.indices) {
+            globalIndices.push_back(idx + vertexOffset);
+        }
+        obj.meshCount = static_cast<uint32_t>(obj.indices.size());
+        vertexOffset += static_cast<uint32_t>(obj.vertices.size());
+        indexOffset  += static_cast<uint32_t>(obj.indices.size());
+    }
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // for (auto& obj : objects) {
+    //     obj.meshOffset = indexOffset;
+    //     globalVertices.insert(globalVertices.end(),obj.vertices.begin(),obj.vertices.end());
+    //     for (uint32_t idx : obj.indices) {
+    //         globalIndices.push_back(idx + vertexOffset);
+    //     }
+    //     obj.meshCount = static_cast<uint32_t>(obj.indices.size());
+    //     vertexOffset += static_cast<uint32_t>(obj.vertices.size());
+    //     indexOffset  += static_cast<uint32_t>(obj.indices.size());
+    // }
+    glGenBuffers(1, &vertexSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,globalVertices.size() * sizeof(Vertex),globalVertices.data(),GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vertexSSBO);
+    glGenBuffers(1, &indexSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,globalIndices.size() * sizeof(uint32_t),globalIndices.data(),GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, indexSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
 bool App::LoadShaderItem(const std::string& name, GLuint& program) {
     std::string basePath = "shaders/";
     std::string vertPath = basePath + name + ".vs";
@@ -189,18 +235,8 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 }
 
 void App::LoadMeshes() {
-    // auto loaded = Mesh::LoadMesh("assets/cube.obj");
-    // if (loaded.empty()) {
-    //     Log("failed to load meshes");
-    //     return;
-    // }
-    // meshes.insert(meshes.end(),loaded.begin(),loaded.end());
-    // meshes.insert(meshes.end(),loaded.begin(),loaded.end());
-    // for (auto& mesh : meshes) {
-    //     mesh.UploadToGPU();
-    //     mesh.Shader = 0;
-    // }
-    // meshes[meshes.size() - 1].Position = glm::vec3(2.0f, 2.0f, 2.0f);
+    objects = Object::LoadObjs("assets/cube.obj");
+    UploadMeshesToGPU();
 }
 
 void App::CalcFPS() {
@@ -219,6 +255,9 @@ void App::PreCalculate() {
     CalcFPS();
     std::string title = nameApp + " [" + fps+ "]";
     glfwSetWindowTitle(window, title.c_str());
+    input->Handlers(camera);
+    camera->CamCalculated(ScreenWidth, ScreenHeight);
+    render->SetCamOrig(camera);
 }
 
 int App::StartedRT() {

@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "../camera/camera.h"
 #include "glm/vec4.hpp"
 
 GLuint Render::LoadCmpShader(const std::string& path) {
@@ -82,6 +83,9 @@ bool Render::CreatePipeline() {
         return false;
     }
 
+    UCamPosLoc = glGetUniformLocation(ComputeShader, "uCamPos");
+    UCamRotLoc = glGetUniformLocation(ComputeShader, "uCamRot");
+
     UResLoc = glGetUniformLocation(ComputeShader, "uResolution");
     if (UResLoc < 0) {
         Log("Uniform uResolution not found in compute shader");
@@ -114,6 +118,11 @@ bool Render::CreatePipeline() {
     return true;
 }
 
+void Render::SetCamOrig(Camera* camera) {
+    camPos = camera->position;
+    camRot = glm::mat3(camera->view);
+}
+
 void Render::RunCompute(glm::vec4 colorClear) {
 
     // clear buffer
@@ -125,6 +134,11 @@ void Render::RunCompute(glm::vec4 colorClear) {
     // run compute shader
     glUseProgram(ComputeShader);
     glUniform2f(UResLoc, ScreenWidth, ScreenHeight);
+
+    // send camera settings
+    glUniform3fv(glGetUniformLocation(ComputeShader, "uCamPos"),1, &camPos[0]);
+    glUniformMatrix3fv(glGetUniformLocation(ComputeShader, "uCamRot"),1, GL_FALSE, &camRot[0][0]);
+
     glBindImageTexture(0, TEXCompShader, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glDispatchCompute((ScreenWidth + 15) / 16, (ScreenHeight + 15) / 16, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

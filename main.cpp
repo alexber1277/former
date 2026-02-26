@@ -3,6 +3,7 @@
 int main() {
 
     App* app = new App("RTNV");
+    app->LoadMeshes();
     return app->StartedRT();
 
 }

@@ -4,6 +4,7 @@
 #include "../camera/camera.h"
 #include "../input/input.h"
 #include "../renderer/render.h"
+#include "../object/object.h"
 
 class App {
     public:
@@ -28,6 +29,11 @@ class App {
         std::string LoadFile(std::string name);
 
         std::string fps;
+
+        std::vector<Object> objects;
+        GLuint vertexSSBO = 0;
+        GLuint indexSSBO  = 0;
+        void UploadMeshesToGPU();
 
         GLuint CreateGrid(int size = 10, float step = 1.0f);
         ~App();

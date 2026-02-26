@@ -15,7 +15,7 @@ class Object {
         // position
         glm::vec3 Position = {0.0f, 0.0f, 0.0f};
         glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
-        glm::vec3 Scale    = {0.1f, 0.1f, 0.1f};
+        glm::vec3 Scale    = {1.0f, 1.0f, 1.0f};
 
         // offset count SSBO
         uint32_t meshOffset;
@@ -33,11 +33,11 @@ class Object {
         // get model transform
         [[nodiscard]] glm::mat4 GetModelMatrix() const;
 
-    private:
-
+        // gpu data
         std::vector<Vertex> vertices;
         std::vector<Instance> instances;
         std::vector<uint32_t> indices;
+
 };
 
 struct Vertex {
