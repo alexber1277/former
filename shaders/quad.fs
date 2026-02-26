@@ -29,12 +29,15 @@ void main()
         }
     }
 
-    float ao = sum / 25.0;
+    float ao = sum / 50.0;
+
+//     FragColor = vec4(vec3(ao), 1.0);
+//     return;
 
     // -------------------------------------------------
     // Threshold (реалистичный для 5x5)
     // -------------------------------------------------
-    float threshold = 0.999;
+    float threshold = 0.0;
 
     if(ao < threshold)
         ao = 0.0;
