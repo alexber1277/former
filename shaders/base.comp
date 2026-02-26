@@ -50,16 +50,14 @@ out float t, out vec3 n)
 // ----------------------------------------
 // Random hash
 // ----------------------------------------
-float rand(vec2 co)
-{
+float rand(vec2 co) {
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 // ----------------------------------------
 // Sample hemisphere
 // ----------------------------------------
-vec3 SampleHemisphere(vec3 N, vec2 seed)
-{
+vec3 SampleHemisphere(vec3 N, vec2 seed) {
     float phi = seed.x * 6.2831853; // 0..2pi
     float cosTheta = seed.y;
     float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
@@ -70,11 +68,35 @@ vec3 SampleHemisphere(vec3 N, vec2 seed)
     return normalize(tangent*localDir.x + bitangent*localDir.y + N*localDir.z);
 }
 
+void MinSpreadAO(ivec2 pixel, ivec2 resolution) {
+    float minAO = 1.0; // AO в диапазоне 0..1
+
+    // Считаем минимум среди текущего пикселя и 8 соседей
+    for(int y=-1;y<=1;y++) {
+        for(int x=-1;x<=1;x++) {
+            ivec2 nPixel = pixel + ivec2(x,y);
+            if(nPixel.x<0 || nPixel.y<0 || nPixel.x>=resolution.x || nPixel.y>=resolution.y) continue;
+
+            float ao = imageLoad(hbaoTex, nPixel).r;
+            minAO = min(minAO, ao);
+        }
+    }
+
+    // Устанавливаем всем 3x3 пикселям минимальное значение
+    for(int y=-1;y<=1;y++) {
+        for(int x=-1;x<=1;x++) {
+            ivec2 nPixel = pixel + ivec2(x,y);
+            if(nPixel.x<0 || nPixel.y<0 || nPixel.x>=resolution.x || nPixel.y>=resolution.y) continue;
+
+            imageStore(hbaoTex, nPixel, vec4(minAO,0,0,1));
+        }
+    }
+}
+
 // ----------------------------------------
 // MAIN
 // ----------------------------------------
-void main()
-{
+void main() {
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
     if(pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y)) return;
 
@@ -123,12 +145,13 @@ void main()
 
     float mask = 0.0;
     vec3 color = uBackground;
+    float bounceDist = 0.0;
 
     if(hit)
     {
         // ---------------- AO ----------------
         int sampleCount = 2;
-        float radius = 0.3;
+        float radius = 0.5;
         float occlusion = 0.0;
 
         for(int i=0;i<sampleCount;i++)
@@ -159,6 +182,7 @@ void main()
                     if(dist2 < radius && dot(n2, -dir) > 0.2)
                     {
                         occlusion += 1.0;
+                        bounceDist = dist2;
                         break;
                     }
                 }
@@ -166,6 +190,9 @@ void main()
         }
 
         mask = occlusion / float(sampleCount);
+
+        float distFactor = pow(clamp(1.0 - bounceDist / radius, 0.0, 1.0),2.0);
+        mask *= distFactor;
 
         // ---------------- Color ----------------
         vec3 lightDir = normalize(uCamPos - hitPos);

@@ -29,7 +29,7 @@ App::App(std::string name) {
     glfwMakeContextCurrent(window);
     glewExperimental = GL_TRUE;
     glfwSetFramebufferSizeCallback(window, App::Resize);
-    glfwSwapInterval(1);
+    //glfwSwapInterval(1);
     glfwMaximizeWindow(window);
 
     GLenum err = glewInit();

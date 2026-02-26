@@ -11,8 +11,55 @@ uniform vec2 uResolution;
 #define FXAA_REDUCE_MUL   (1.0/8.0)
 #define FXAA_SPAN_MAX     8.0
 
-void main()
-{
+float SpreadAO(sampler2D tex, vec2 uv, vec2 resolution) {
+    float aoCenter = texture(tex, uv).r;
+    float spread = aoCenter * 0.3;
+    float aoNew = aoCenter;
+
+    // смещаем соседей через uv
+    for(int y=-1;y<=1;y++) {
+        for(int x=-1;x<=1;x++) {
+            if(x==0 && y==0) continue;
+            vec2 offsetUV = uv + vec2(x,y)/resolution;
+            float neighbor = texture(tex, offsetUV).r;
+            float val = neighbor + spread;
+            if(val > aoCenter) val = aoCenter;
+            aoNew = max(aoNew, val); // применяем к выходному AO
+        }
+    }
+    return aoNew;
+}
+
+float AverageAO(sampler2D tex, vec2 uv, vec2 resolution) {
+    float sum = 0.0;
+    int count = 0;
+
+    for(int y=-1; y<=1; y++) {
+        for(int x=-1; x<=1; x++) {
+            vec2 offsetUV = uv + vec2(x,y)/resolution;
+            sum += texture(tex, offsetUV).r;
+            count++;
+        }
+    }
+
+    return sum / float(count);
+}
+
+// Минимальный AO из соседей 3x3
+float MinAO(sampler2D tex, vec2 uv, vec2 resolution) {
+    float minVal = 1.0;
+    for(int y=-1; y<=1; y++) {
+        for(int x=-1; x<=1; x++) {
+            vec2 offsetUV = uv + vec2(x,y)/resolution;
+            float sampleVal = texture(tex, offsetUV).r;
+            minVal = min(minVal, sampleVal);
+        }
+    }
+
+    return minVal;
+}
+
+void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
     vec2 texel = 1.0 / uResolution;
 
@@ -21,15 +68,13 @@ void main()
     // -------------------------------------------------
     float sum = 0.0;
 
-    for(int y = -2; y <= 2; y++)
-    {
-        for(int x = -2; x <= 2; x++)
-        {
+    for(int y = -5; y <= 5; y++) {
+        for(int x = -5; x <= 5; x++) {
             sum += texture(hbaoTex, uv + texel * vec2(x,y)).r;
         }
     }
 
-    float ao = sum / 50.0;
+    float ao = sum / 99.0;
 
 //     FragColor = vec4(vec3(ao), 1.0);
 //     return;
@@ -39,31 +84,34 @@ void main()
     // -------------------------------------------------
     float threshold = 0.0;
 
+//     FragColor = vec4(vec3(ao),1.0);
+//     return ;
+
     if(ao < threshold)
         ao = 0.0;
 
     // -------------------------------------------------
     // Remove isolated pixels (по размытому сигналу)
     // -------------------------------------------------
-    if(ao > 0.0)
-    {
-        int neighbors = 0;
-
-        for(int y = -1; y <= 1; y++)
-        {
-            for(int x = -1; x <= 1; x++)
-            {
-                if(x == 0 && y == 0) continue;
-
-                float n = texture(hbaoTex, uv + texel * vec2(x,y)).r;
-                if(n > threshold)
-                    neighbors++;
-            }
-        }
-
-        if(neighbors == 0)
-            ao = 0.0;
-    }
+//     if(ao > 0.0)
+//     {
+//         int neighbors = 0;
+//
+//         for(int y = -1; y <= 1; y++)
+//         {
+//             for(int x = -1; x <= 1; x++)
+//             {
+//                 if(x == 0 && y == 0) continue;
+//
+//                 float n = texture(hbaoTex, uv + texel * vec2(x,y)).r;
+//                 if(n > threshold)
+//                     neighbors++;
+//             }
+//         }
+//
+//         if(neighbors == 0)
+//             ao = 0.0;
+//     }
 
     // -------------------------------------------------
     // FXAA
@@ -118,7 +166,12 @@ void main()
     // -------------------------------------------------
     // Apply AO (мягкое затемнение)
     // -------------------------------------------------
-    finalColor *= (1.0 - ao);
+
+    //ao = SpreadAO(hbaoTex, uv, uResolution);
+    //ao = AverageAO(hbaoTex, uv, uResolution);
+    //float aoMin = MinAO(hbaoTex, uv, uResolution);
+    //ao = aoMin;
+    //finalColor *= (1.0 - ao);
 
     FragColor = vec4(finalColor, 1.0);
 }

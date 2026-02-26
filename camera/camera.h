@@ -17,8 +17,8 @@ public:
     float farPlane  = 2000.0f;
 
     float orbitSpeed = 0.5f;
-    float panSpeed   = 0.5f;
-    float zoomSpeed  = 10.0f;
+    float panSpeed   = 0.1f;
+    float zoomSpeed  = 5.0f;
 
     void Orbit(float dx, float dy);
     void Pan(float dx, float dy);
