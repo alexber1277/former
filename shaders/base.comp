@@ -52,10 +52,9 @@ bool intersectTriangle(vec3 ro, vec3 rd, vec3 v0, vec3 v1, vec3 v2, out float t,
 
 void main() {
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
-    if (pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y))
-    return;
+    if (pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y)) return;
 
-    // normalized screen coordinates [-1,1], с учётом aspect
+    // normalized screen coordinates [-1,1], с учетом aspect
     vec2 uv = (vec2(pixel) / uResolution) * 2.0 - 1.0;
     uv.x *= uResolution.x / uResolution.y;
 
@@ -71,6 +70,7 @@ void main() {
     // raycast по всем треугольникам
     float closestT = 1e30;
     vec3 hitNormal = vec3(0.0);
+    vec3 hitPos = vec3(0.0);
     bool hit = false;
 
     uint triCount = indices.length() / 3;
@@ -91,6 +91,7 @@ void main() {
             if (dist < closestT) {
                 closestT = dist;
                 hitNormal = n;
+                hitPos = ro + rd * dist;
                 hit = true;
             }
         }
@@ -98,9 +99,13 @@ void main() {
 
     vec3 color = vec3(0.0);
     if (hit) {
-        vec3 lightDir = normalize(vec3(0.5, 1.0, -0.3));
+        // освещение от камеры
+        vec3 lightDir = normalize(ro - hitPos); // от поверхности к камере
         float diff = max(dot(hitNormal, lightDir), 0.0);
-        color = vec3(diff);
+
+        // ambient небольшой
+        float ambient = 0.1;
+        color = vec3(ambient + diff * (1.0 - ambient));
     }
 
     imageStore(destTex, pixel, vec4(color, 1.0));
