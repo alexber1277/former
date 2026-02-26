@@ -1,5 +1,5 @@
 #pragma once
-#include <GLFW/glfw3.h>
+#include "../gl/glincludes.h"
 #include "../camera/camera.h"
 
 class Input {

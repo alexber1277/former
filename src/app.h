@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
-#include <glm/glm.hpp>
-#include "../mesh/Mesh.h"
-#include <GLFW/glfw3.h>
+#include "../gl/glincludes.h"
 #include "../camera/camera.h"
 #include "../input/input.h"
 #include "../renderer/render.h"
@@ -41,8 +39,6 @@ class App {
         Camera* camera;
         Input* input;
         Render* render;
-
-        std::vector<Mesh> meshes;
 
         int ScreenWidth;
         int ScreenHeight;

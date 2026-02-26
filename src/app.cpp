@@ -5,9 +5,6 @@
 #include <ostream>
 #include <sstream>
 
-#include "glm/gtc/random.hpp"
-#include "glm/gtc/type_ptr.inl"
-
 App::App(std::string name) {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -192,18 +189,18 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 }
 
 void App::LoadMeshes() {
-    auto loaded = Mesh::LoadMesh("assets/cube.obj");
-    if (loaded.empty()) {
-        Log("failed to load meshes");
-        return;
-    }
-    meshes.insert(meshes.end(),loaded.begin(),loaded.end());
-    meshes.insert(meshes.end(),loaded.begin(),loaded.end());
-    for (auto& mesh : meshes) {
-        mesh.UploadToGPU();
-        mesh.Shader = 0;
-    }
-    meshes[meshes.size() - 1].Position = glm::vec3(2.0f, 2.0f, 2.0f);
+    // auto loaded = Mesh::LoadMesh("assets/cube.obj");
+    // if (loaded.empty()) {
+    //     Log("failed to load meshes");
+    //     return;
+    // }
+    // meshes.insert(meshes.end(),loaded.begin(),loaded.end());
+    // meshes.insert(meshes.end(),loaded.begin(),loaded.end());
+    // for (auto& mesh : meshes) {
+    //     mesh.UploadToGPU();
+    //     mesh.Shader = 0;
+    // }
+    // meshes[meshes.size() - 1].Position = glm::vec3(2.0f, 2.0f, 2.0f);
 }
 
 void App::CalcFPS() {

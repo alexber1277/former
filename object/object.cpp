@@ -1,9 +1,5 @@
 #include "object.h"
-
 #include <iostream>
-
-#include "glm/glm.hpp"
-#include "glm/gtx/transform.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -17,45 +13,70 @@ glm::mat4 Object::GetModelMatrix() const {
     return T * Rz * Ry * Rx * S;
 }
 
-std::vector<Object> LoadObjs(const std::string& path) {
-    std::vector<Object> meshes;
+std::vector<Object> Object::LoadObjs(const std::string& path) {
+    std::vector<Object> objects;
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path,
-        aiProcess_Triangulate |
-        aiProcess_JoinIdenticalVertices |
-        aiProcess_GlobalScale
-    );
+    const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GlobalScale);
     if (!scene || !scene->HasMeshes()) {
-        std::cerr << "Failed to load: " << path << std::endl;
-        return meshes;
+        return objects;
     }
     for (unsigned int m = 0; m < scene->mNumMeshes; ++m) {
         aiMesh* mesh = scene->mMeshes[m];
-        Object newMesh;
-        for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-            const aiVector3D& pos = mesh->mVertices[i];
-            newMesh.m_Positions.emplace_back(pos.x, pos.y, pos.z, 1.0f);
+        Object obj;
+        obj.vertices.reserve(mesh->mNumVertices);
+        for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+            Vertex vert{};
+            vert.pos = glm::vec4(
+                mesh->mVertices[v].x,
+                mesh->mVertices[v].y,
+                mesh->mVertices[v].z,
+                1.0f
+            );
             if (mesh->HasNormals()) {
-                const aiVector3D& norm = mesh->mNormals[i];
-                newMesh.m_Normals.emplace_back(norm.x, norm.y, norm.z);
+                vert.normal = glm::vec4(
+                    mesh->mNormals[v].x,
+                    mesh->mNormals[v].y,
+                    mesh->mNormals[v].z,
+                    0.0f
+                );
             } else {
-                newMesh.m_Normals.emplace_back(0.0f, 0.0f, 1.0f);
+                vert.normal = glm::vec4(0, 0, 1, 0);
             }
+            if (mesh->HasTextureCoords(0)) {
+                vert.uv = glm::vec2(
+                    mesh->mTextureCoords[0][v].x,
+                    mesh->mTextureCoords[0][v].y
+                );
+            } else {
+                vert.uv = glm::vec2(0.0f);
+            }
+            vert.pad = glm::vec2(0.0f);
+            obj.vertices.push_back(vert);
         }
+        obj.indices.reserve(mesh->mNumFaces * 3);
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
             const aiFace& face = mesh->mFaces[f];
-            if (face.mNumIndices == 3) {
-                newMesh.m_Indices.emplace_back(
-                    face.mIndices[0],
-                    face.mIndices[1],
-                    face.mIndices[2]
-                );
+            obj.indices.push_back(face.mIndices[0]);
+            obj.indices.push_back(face.mIndices[1]);
+            obj.indices.push_back(face.mIndices[2]);
+        }
+        obj.meshCount = static_cast<uint32_t>(obj.indices.size());
+        obj.meshOffset = 0;
+        obj.matBaseColor = glm::vec4(1.0f);
+        obj.matRoughness = 0.5f;
+        obj.matMetallic  = 0.0f;
+        obj.matPad       = glm::vec2(0.0f);
+        if (scene->HasMaterials()) {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            aiColor3D color(1.f, 1.f, 1.f);
+            if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+                obj.matBaseColor = glm::vec4(color.r, color.g, color.b, 1.0f);
             }
         }
-        newMesh.m_VertexCount = (uint32_t)newMesh.m_Positions.size();
-        newMesh.m_PrimitiveCount = (uint32_t)newMesh.m_Indices.size();
-        newMesh.m_NormalCount = (uint32_t)newMesh.m_Normals.size();
-        meshes.push_back(std::move(newMesh));
+        Instance inst{};
+        inst.model = glm::mat4(1.0f);
+        obj.instances.push_back(inst);
+        objects.push_back(std::move(obj));
     }
-    return meshes;
+    return objects;
 }

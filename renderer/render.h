@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "glm/vec4.hpp"
+#include "../gl/glincludes.h"
 
 class Render {
     public:

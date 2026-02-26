@@ -20,8 +20,6 @@ set(SOURCES
         camera/camera.h
         input/input.cpp
         input/input.h
-        mesh/Mesh.cpp
-        mesh/Mesh.h
         renderer/render.cpp
         renderer/render.h
         object/object.cpp

@@ -1,7 +1,5 @@
 #include "input.h"
-
 #include <iostream>
-#include <ostream>
 
 void Input::Update() {
     m_LastMouseX = m_MouseX;
