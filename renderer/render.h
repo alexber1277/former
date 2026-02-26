@@ -30,9 +30,11 @@ class Render {
         // uniforms compute shader
         GLuint UResLoc;
         GLuint TEXCompShader;
+        GLuint HbaoTex;
 
         // uniforms quad shader
         GLuint UScreenTex;
+        GLint UHbaoTex;
 
         // VAOs quad shader
         GLuint QuadVAO;

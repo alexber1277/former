@@ -105,6 +105,11 @@ bool Render::CreatePipeline() {
         Log("Uniform screenTex not found in quad shader");
     }
 
+    UHbaoTex = glGetUniformLocation(QuadShader, "hbaoTex");
+    if (UHbaoTex < 0) {
+        Log("Uniform hbaoTex not found in quad shader");
+    }
+
     glUseProgram(QuadShader);
     glUniform1i(UScreenTex, 0);
     glUseProgram(0);
@@ -113,9 +118,20 @@ bool Render::CreatePipeline() {
     glBindVertexArray(QuadVAO);
     glBindVertexArray(0);
 
+    // Main tex
     glGenTextures(1, &TEXCompShader);
     glBindTexture(GL_TEXTURE_2D, TEXCompShader);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ScreenWidth, ScreenHeight,0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // HBAO
+    glGenTextures(1, &HbaoTex);
+    glBindTexture(GL_TEXTURE_2D, HbaoTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, ScreenWidth, ScreenHeight, 0, GL_RED, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -151,6 +167,7 @@ void Render::RunCompute(glm::vec4 colorClear) {
     glUniform3fv(UBackground,1, &colorClear[0]);
     glUniform1f(UCamFovLoc, camFov);
 
+    glBindImageTexture(1, HbaoTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
     glBindImageTexture(0, TEXCompShader, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glDispatchCompute((ScreenWidth + 15) / 16, (ScreenHeight + 15) / 16, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -158,9 +175,15 @@ void Render::RunCompute(glm::vec4 colorClear) {
     // render fullscreen quad
     glUseProgram(QuadShader);
     glBindVertexArray(QuadVAO);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, TEXCompShader);
     glUniform1i(UScreenTex, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, HbaoTex);
+    glUniform1i(UHbaoTex, 1);
+
     glUniform2f(UQuadResolute, ScreenWidth, ScreenHeight);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);

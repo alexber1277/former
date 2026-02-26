@@ -2,6 +2,7 @@
 
 layout (local_size_x = 16, local_size_y = 16) in;
 layout (rgba32f, binding = 0) uniform image2D destTex;
+layout (r32f, binding = 1) uniform image2D hbaoTex;
 
 uniform vec2 uResolution;
 uniform vec3 uCamPos;
@@ -25,94 +26,176 @@ layout(std430, binding = 1) buffer IndexBuffer {
     uint indices[];
 };
 
-bool intersectTriangle(vec3 ro, vec3 rd,vec3 v0, vec3 v1, vec3 v2,vec3 n0, vec3 n1, vec3 n2,out float t,out vec3 n) {
+// =======================================
+// Triangle intersection
+// =======================================
+bool intersectTriangle(vec3 ro, vec3 rd, vec3 v0, vec3 v1, vec3 v2,
+vec3 n0, vec3 n1, vec3 n2,
+out float t, out vec3 n)
+{
     vec3 e1 = v1 - v0;
     vec3 e2 = v2 - v0;
-
     vec3 p = cross(rd, e2);
     float det = dot(e1, p);
-    if (abs(det) < 1e-6) return false;
-
+    if(abs(det) < 1e-6) return false;
     float invDet = 1.0 / det;
     vec3 s = ro - v0;
-
-    float u = dot(s, p) * invDet;
-    if (u < 0.0 || u > 1.0) return false;
-
-    vec3 q = cross(s, e1);
-    float v = dot(rd, q) * invDet;
-    if (v < 0.0 || u + v > 1.0) return false;
-
-    t = dot(e2, q) * invDet;
-    if (t <= 0.0) return false;
-
+    float u = dot(s,p)*invDet;
+    if(u < 0.0 || u > 1.0) return false;
+    vec3 q = cross(s,e1);
+    float v = dot(rd,q)*invDet;
+    if(v<0.0 || u+v>1.0) return false;
+    t = dot(e2,q)*invDet;
+    if(t <= 0.0) return false;
     float w = 1.0 - u - v;
-    n = normalize(w * n0 + u * n1 + v * n2);
-
+    n = normalize(w*n0 + u*n1 + v*n2);
     return true;
 }
 
-void main() {
+// =======================================
+// Simple hash for randomness
+// =======================================
+float rand(vec2 co)
+{
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+// =======================================
+// Sample hemisphere around normal (uniform)
+// =======================================
+vec3 SampleHemisphere(vec3 N, vec2 seed)
+{
+    float phi = seed.x * 6.2831853; // 0..2pi
+    float cosTheta = seed.y;        // 0..1
+    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+
+    vec3 localDir = vec3(cos(phi)*sinTheta, sin(phi)*sinTheta, cosTheta);
+
+    // TBN basis
+    vec3 tangent = normalize(abs(N.x) > 0.1 ? cross(vec3(0,1,0), N) : cross(vec3(1,0,0), N));
+    vec3 bitangent = cross(N, tangent);
+
+    return normalize(tangent*localDir.x + bitangent*localDir.y + N*localDir.z);
+}
+
+// =======================================
+// Compute HBAO
+// =======================================
+float ComputeHBAO(vec3 hitPos, vec3 normal)
+{
+    int sampleCount = 4;
+    float radius = 0.25;
+    float ao = 0.0;
+
+    uint triCount = indices.length() / 3;
+
+    for(int i=0;i<sampleCount;i++)
+    {
+        vec2 seed = vec2(rand(hitPos.xy + float(i)*0.37), rand(hitPos.yz + float(i)*0.91));
+        vec3 sampleDir = SampleHemisphere(normal, seed);
+        vec3 samplePos = hitPos + sampleDir * radius;
+
+        bool occluded = false;
+        for(uint t=0;t<triCount;t++)
+        {
+            uint i0 = indices[t*3+0];
+            uint i1 = indices[t*3+1];
+            uint i2 = indices[t*3+2];
+
+            vec3 v0 = vertices[i0].pos.xyz;
+            vec3 v1 = vertices[i1].pos.xyz;
+            vec3 v2 = vertices[i2].pos.xyz;
+            vec3 n0 = vertices[i0].normal.xyz;
+            vec3 n1 = vertices[i1].normal.xyz;
+            vec3 n2 = vertices[i2].normal.xyz;
+
+            float tDummy;
+            vec3 nDummy;
+            if(intersectTriangle(hitPos + normal*0.01, sampleDir, v0,v1,v2,n0,n1,n2, tDummy, nDummy))
+            {
+                if(tDummy < radius)
+                {
+                    // проверяем угол между нормалями
+                    if(dot(normal, nDummy) >= 0.0) // угол <= 90°
+                    {
+                        occluded=true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(occluded) ao += 1.0;
+    }
+
+    return clamp(ao / float(sampleCount), 0.0, 1.0);
+}
+
+// =======================================
+// MAIN
+// =======================================
+void main()
+{
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
-    if (pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y)) return;
+    if(pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y)) return;
 
-    // normalized screen coordinates [-1,1], с учетом aspect
-    vec2 uv = (vec2(pixel) / uResolution) * 2.0 - 1.0;
-    uv.x *= uResolution.x / uResolution.y;
+    vec2 uv = (vec2(pixel)/uResolution)*2.0-1.0;
+    uv.x *= uResolution.x/uResolution.y;
 
-    // строим базис камеры из позиции и target
     vec3 forward = normalize(uCamTarg - uCamPos);
-    vec3 right   = normalize(cross(forward, uCamUp));
-    vec3 up      = cross(right, forward);
+    vec3 right = normalize(cross(forward,uCamUp));
+    vec3 up = cross(right,forward);
 
-    float fovScale = tan(radians(uCamFov) * 0.5);
-    vec3 rd = normalize(uv.x * fovScale * right + uv.y * fovScale * up + forward);
+    float fovScale = tan(radians(uCamFov)*0.5);
+    vec3 rd = normalize(uv.x*fovScale*right + uv.y*fovScale*up + forward);
     vec3 ro = uCamPos;
 
-    // raycast по всем треугольникам
+    // Raycast
     float closestT = 1e30;
     vec3 hitNormal = vec3(0.0);
     vec3 hitPos = vec3(0.0);
     bool hit = false;
 
-    uint triCount = indices.length() / 3;
-
-    for (uint t = 0; t < triCount; ++t) {
-        uint i0 = indices[t * 3 + 0];
-        uint i1 = indices[t * 3 + 1];
-        uint i2 = indices[t * 3 + 2];
+    uint triCount = indices.length()/3;
+    for(uint t=0;t<triCount;t++)
+    {
+        uint i0 = indices[t*3+0];
+        uint i1 = indices[t*3+1];
+        uint i2 = indices[t*3+2];
 
         vec3 v0 = vertices[i0].pos.xyz;
         vec3 v1 = vertices[i1].pos.xyz;
         vec3 v2 = vertices[i2].pos.xyz;
-
         vec3 n0 = vertices[i0].normal.xyz;
         vec3 n1 = vertices[i1].normal.xyz;
         vec3 n2 = vertices[i2].normal.xyz;
 
         float dist;
         vec3 n;
-
-        if (intersectTriangle(ro, rd, v0, v1, v2, n0, n1, n2, dist, n)) {
-            if (dist < closestT) {
-                closestT = dist;
-                hitNormal = n;
-                hitPos = ro + rd * dist;
-                hit = true;
+        if(intersectTriangle(ro,rd,v0,v1,v2,n0,n1,n2,dist,n))
+        {
+            if(dist<closestT)
+            {
+                closestT=dist;
+                hitNormal=n;
+                hitPos=ro + rd*dist;
+                hit=true;
             }
         }
     }
 
-    vec3 color = uBackground.xyz;
-    if (hit) {
-        // освещение от камеры
-        vec3 lightDir = normalize(ro - hitPos); // от поверхности к камере
-        float diff = max(dot(hitNormal, lightDir), 0.0);
-
-        // ambient небольшой
+    vec3 color = uBackground;
+    if(hit) {
+        float AO = ComputeHBAO(hitPos, hitNormal);
+        vec3 lightDir = normalize(ro - hitPos);
+        float diff = max(dot(hitNormal, lightDir),0.0);
         float ambient = 0.1;
-        color = vec3(ambient + diff * (1.0 - ambient));
+        color = vec3(ambient + diff*(1.0 - ambient));
+        // color *= (1.0 - AO*0.1);
+        imageStore(hbaoTex, ivec2(gl_GlobalInvocationID.xy), vec4(AO,0,0,1));
+    } else {
+        imageStore(hbaoTex, pixel, vec4(0.0,0.0,0.0,1.0));
     }
 
-    imageStore(destTex, pixel, vec4(color, 1.0));
+    imageStore(destTex, pixel, vec4(color,1.0));
 }
