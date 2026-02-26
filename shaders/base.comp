@@ -127,8 +127,8 @@ void main()
     if(hit)
     {
         // ---------------- AO ----------------
-        int sampleCount = 4;
-        float radius = 0.1;
+        int sampleCount = 2;
+        float radius = 0.3;
         float occlusion = 0.0;
 
         for(int i=0;i<sampleCount;i++)
