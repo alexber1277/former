@@ -5,7 +5,7 @@ layout (rgba32f, binding = 0) uniform image2D destTex;
 
 uniform vec2 uResolution;
 uniform vec3 uCamPos;
-uniform vec3 uCamTarget;
+uniform vec3 uCamTarg;
 uniform vec3 uCamUp;
 uniform float uCamFov;
 
@@ -24,22 +24,28 @@ layout(std430, binding = 1) buffer IndexBuffer {
     uint indices[];
 };
 
-// Triangle intersection
-bool intersectTriangle(vec3 ro, vec3 rd, vec3 v0, vec3 v1, vec3 v2, out float t, out vec3 n){
+// Möller–Trumbore ray-triangle intersection
+bool intersectTriangle(vec3 ro, vec3 rd, vec3 v0, vec3 v1, vec3 v2, out float t, out vec3 n) {
     vec3 e1 = v1 - v0;
     vec3 e2 = v2 - v0;
+
     vec3 p = cross(rd, e2);
     float det = dot(e1, p);
     if (abs(det) < 1e-6) return false;
+
     float invDet = 1.0 / det;
     vec3 s = ro - v0;
+
     float u = dot(s, p) * invDet;
     if (u < 0.0 || u > 1.0) return false;
+
     vec3 q = cross(s, e1);
     float v = dot(rd, q) * invDet;
     if (v < 0.0 || u + v > 1.0) return false;
+
     t = dot(e2, q) * invDet;
     if (t <= 0.0) return false;
+
     n = normalize(cross(e1, e2));
     return true;
 }
@@ -49,29 +55,26 @@ void main() {
     if (pixel.x >= int(uResolution.x) || pixel.y >= int(uResolution.y))
     return;
 
-    // Normalized device coordinates [-1,1]
+    // normalized screen coordinates [-1,1], с учётом aspect
     vec2 uv = (vec2(pixel) / uResolution) * 2.0 - 1.0;
     uv.x *= uResolution.x / uResolution.y;
 
-    // Build camera coordinate system on GPU
-    vec3 forward = normalize(uCamTarget - uCamPos);
+    // строим базис камеры из позиции и target
+    vec3 forward = normalize(uCamTarg - uCamPos);
     vec3 right   = normalize(cross(forward, uCamUp));
     vec3 up      = cross(right, forward);
 
-    // FOV scaling
-    float scale = tan(radians(uCamFov * 0.5));
-    vec3 localDir = normalize(vec3(uv * scale, -1.0));
-
-    // Transform to world space
-    vec3 rd = normalize(right * localDir.x + up * localDir.y - forward * localDir.z);
+    float fovScale = tan(radians(uCamFov) * 0.5);
+    vec3 rd = normalize(uv.x * fovScale * right + uv.y * fovScale * up + forward);
     vec3 ro = uCamPos;
 
-    // Ray tracing
+    // raycast по всем треугольникам
     float closestT = 1e30;
     vec3 hitNormal = vec3(0.0);
     bool hit = false;
 
     uint triCount = indices.length() / 3;
+
     for (uint t = 0; t < triCount; ++t) {
         uint i0 = indices[t * 3 + 0];
         uint i1 = indices[t * 3 + 1];
