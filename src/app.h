@@ -6,6 +6,7 @@
 #include "../renderer/render.h"
 #include "../object/object.h"
 #include "../gui/gui.h"
+#include "../ssbo/ssbo.h"
 
 class App {
     public:
@@ -20,11 +21,10 @@ class App {
         void CalcFPS();
         void PreCalculate();
 
+        void CreateGPUBuffers();
         void RenderFullscreenQuad();
         void ShowGrid(GLuint shader, int lineCount);
         bool LoadShaderItem(const std::string& name, GLuint& program);
-
-        void CreateOptBuffers();
 
         static void Resize(GLFWwindow* wind, int width, int height);
         std::string LoadFile(std::string name);
@@ -33,10 +33,14 @@ class App {
 
         std::vector<Object> objects;
         std::vector<Material> materials;
-        GLuint vertexSSBO = 0;
-        GLuint indexSSBO  = 0;
-        GLuint matSSBO = 0;
-        void UploadMeshesToGPU();
+        std::vector<InstanceGPU> instances;
+
+        SSBO vertexBuffer;
+        SSBO indexBuffer;
+        SSBO materialBuffer;
+        SSBO instanceBuffer;
+
+        void UploadToGPU();
 
         GLuint CreateGrid(int size = 10, float step = 1.0f);
         ~App();

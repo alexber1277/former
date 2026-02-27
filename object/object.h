@@ -6,32 +6,19 @@
 struct Vertex;
 struct Instance;
 struct Material;
+struct InstanceGPU;
 
 class Object {
 
     public:
 
-        GLuint ID;
+        uint32_t ID;
 
-        // position
-        glm::vec3 Position = {0.0f, 0.0f, 0.0f};
-        glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
-        glm::vec3 Scale    = {0.1f, 0.1f, 0.1f};
-
-        // offset count SSBO
         uint32_t meshOffset;
         uint32_t meshCount;
 
-        // load objects from file
         static std::vector<Object> LoadObjs(const std::string& path);
 
-        // material
-        uint32_t materialId;
-
-        // get model transform
-        [[nodiscard]] glm::mat4 GetModelMatrix() const;
-
-        // gpu data
         std::vector<Vertex> vertices;
         std::vector<Instance> instances;
         std::vector<uint32_t> indices;
@@ -45,13 +32,46 @@ struct Vertex {
     glm::vec2 pad;
 };
 
-struct Instance {
-    glm::mat4 model;
+struct Material {
+    glm::vec4 baseColor = glm::vec4(0.8f,0.7f,0.7f,1.0f);
+    float roughness = 0.5;
+    float metallic = 0.001;
+    glm::vec2 pad;
 };
 
-struct Material {
-    glm::vec4 baseColor;
-    float roughness;
-    float metallic;
-    glm::vec2 pad;
+struct InstanceGPU {
+    glm::mat4 Model;
+    uint32_t ObjectId;
+    uint32_t MaterialId;
+    glm::vec2 pad = glm::vec2(0.0f);
+};
+
+struct Instance {
+
+    glm::vec3 Position{0.0f};
+    glm::vec3 Rotation{0.0f};
+    glm::vec3 Scale{0.1f};
+
+    uint32_t ObjectId = 0;
+    uint32_t MaterialId = 0;
+
+    glm::mat4 GetModelMatrix() const {
+        glm::mat4 T = glm::translate(glm::mat4(1.0f), Position);
+        glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), glm::vec3(1,0,0));
+        glm::mat4 Ry = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), glm::vec3(0,1,0));
+        glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), glm::vec3(0,0,1));
+        glm::mat4 S = glm::scale(glm::mat4(1.0f), Scale);
+        return T * Rz * Ry * Rx * S;
+    }
+
+    InstanceGPU GetInstanceGPU() const {
+        return InstanceGPU{
+            GetModelMatrix(),
+            ObjectId,
+            MaterialId,
+            glm::vec2(0.0f)
+        };
+    }
+
+
 };

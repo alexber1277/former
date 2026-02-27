@@ -3,26 +3,23 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-glm::mat4 Object::GetModelMatrix() const {
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), Position);
-    glm::mat4 Rx = glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.x),glm::vec3(1,0,0));
-    glm::mat4 Ry = glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.y),glm::vec3(0,1,0));
-    glm::mat4 Rz = glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),glm::vec3(0,0,1));
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), Scale);
-    return T * Rz * Ry * Rx * S;
-}
-
 std::vector<Object> Object::LoadObjs(const std::string& path) {
     std::vector<Object> objects;
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GlobalScale);
+    const aiScene* scene = importer.ReadFile(
+        path,
+        aiProcess_Triangulate |
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_GlobalScale
+    );
     if (!scene || !scene->HasMeshes()) {
         return objects;
     }
+    objects.reserve(scene->mNumMeshes);
     for (unsigned int m = 0; m < scene->mNumMeshes; ++m) {
         aiMesh* mesh = scene->mMeshes[m];
-        Object obj;
+        Object obj{};
+        obj.ID = m;
         obj.vertices.reserve(mesh->mNumVertices);
         for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
             Vertex vert{};
@@ -40,7 +37,7 @@ std::vector<Object> Object::LoadObjs(const std::string& path) {
                     0.0f
                 );
             } else {
-                vert.normal = glm::vec4(0, 0, 1, 0);
+                vert.normal = glm::vec4(0,0,1,0);
             }
             if (mesh->HasTextureCoords(0)) {
                 vert.uv = glm::vec2(
@@ -62,9 +59,6 @@ std::vector<Object> Object::LoadObjs(const std::string& path) {
         }
         obj.meshCount = static_cast<uint32_t>(obj.indices.size());
         obj.meshOffset = 0;
-        Instance inst{};
-        inst.model = obj.GetModelMatrix();
-        obj.instances.push_back(inst);
         objects.push_back(std::move(obj));
     }
     return objects;

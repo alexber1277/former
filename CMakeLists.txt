@@ -42,6 +42,8 @@ set(SOURCES
         object/object.h
         gui/gui.cpp
         gui/gui.h
+        ssbo/ssbo.cpp
+        ssbo/ssbo.h
 )
 
 list(APPEND SOURCES ${IMGUI_SOURCES})
