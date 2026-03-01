@@ -1,7 +1,7 @@
 #include "camera.h"
 
 void Camera::CamCalculated(int width, int height){
-    float aspect = height > 0 ? (float)width / height : 1.0f;
+    aspect = height > 0 ? (float)width / height : 1.0f;
     view = glm::lookAt(position, target, up);
     projection = glm::perspective(glm::radians(fov),aspect,nearPlane,farPlane);
     viewProjection = projection * view;

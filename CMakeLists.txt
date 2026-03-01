@@ -36,14 +36,12 @@ set(SOURCES
         camera/camera.h
         input/input.cpp
         input/input.h
-        renderer/render.cpp
-        renderer/render.h
         object/object.cpp
         object/object.h
         gui/gui.cpp
         gui/gui.h
-        ssbo/ssbo.cpp
-        ssbo/ssbo.h
+        mesh/mesh.cpp
+        mesh/mesh.h
 )
 
 list(APPEND SOURCES ${IMGUI_SOURCES})

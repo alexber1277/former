@@ -3,10 +3,8 @@
 #include "../gl/glincludes.h"
 #include "../camera/camera.h"
 #include "../input/input.h"
-#include "../renderer/render.h"
 #include "../object/object.h"
 #include "../gui/gui.h"
-#include "../ssbo/ssbo.h"
 
 class App {
     public:
@@ -35,11 +33,6 @@ class App {
         std::vector<Material> materials;
         std::vector<InstanceGPU> instances;
 
-        SSBO vertexBuffer;
-        SSBO indexBuffer;
-        SSBO materialBuffer;
-        SSBO instanceBuffer;
-
         void UploadToGPU();
 
         GLuint CreateGrid(int size = 10, float step = 1.0f);
@@ -51,7 +44,6 @@ class App {
         std::string windowName;
         Camera* camera;
         Input* input;
-        Render* render;
         Gui* gui;
 
         int ScreenWidth;
