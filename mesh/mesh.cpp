@@ -52,13 +52,16 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
         instance.position = glm::vec3(0.0f);
         instance.rotation = glm::vec3(0.0f);
         instance.scale = glm::vec3(0.1f);
-        instance.UpdateModel();
         mesh.instances.push_back(instance);
         mesh.UploadToGPU();
         mesh.UpdateInstances();
         objects.push_back(mesh);
     }
     return objects;
+}
+
+void Mesh::SetCamPos(GLuint shader) {
+    CameraPos = glGetUniformLocation(shader, "cameraPos");
 }
 
 void Mesh::UploadToGPU() {
@@ -115,9 +118,18 @@ void Mesh::UpdateInstances() {
     glBufferData(GL_ARRAY_BUFFER, models.size() * sizeof(glm::mat4), models.data(), GL_DYNAMIC_DRAW);
 }
 
-void Mesh::Draw(GLuint shader, GLint viewProjLoc, const glm::mat4& viewProj) {
+void Mesh::AddInstance(const glm::vec3& position,const glm::vec3& rotation,const glm::vec3& scale) {
+    MeshInstance instance;
+    instance.position = position;
+    instance.rotation = rotation;
+    instance.scale    = scale;
+    instances.push_back(instance);
+}
+
+void Mesh::Draw(GLuint shader, GLint viewProjLoc, Camera* camera) {
     glUseProgram(shader);
-    glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &viewProj[0][0]);
+    glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &camera->viewProjection[0][0]);
+    glUniform3fv(CameraPos, 1, glm::value_ptr(camera->position));
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES,indices.size() * 3,GL_UNSIGNED_INT,0,instances.size());
     glBindVertexArray(0);

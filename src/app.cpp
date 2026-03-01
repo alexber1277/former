@@ -211,9 +211,10 @@ void App::DrawGrid() {
 
 void App::LoadMeshes() {
     meshes = Mesh::LoadMeshes("assets/cube.obj");
-
-
-
+    for (auto& mesh : meshes) {
+        mesh.SetCamPos(shader->MeshShader);
+        mesh.UpdateInstances();
+    }
 }
 
 void App::CalcFPS() {
@@ -252,16 +253,12 @@ int App::StartedRT() {
         // =================================
 
         for (auto& mesh : meshes) {
-            mesh.Draw(
-                shader->MeshShader,
-                shader->MeshCameraProjection,
-                camera->viewProjection
-            );
+            mesh.Draw(shader->MeshShader,shader->MeshCameraProjection,camera);
         }
 
 
         // =================================
-        //gui->RenderPanels();
+        gui->RenderPanels();
         glfwSwapBuffers(window);
     }
     return 0;

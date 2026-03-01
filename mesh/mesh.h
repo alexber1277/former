@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "../gl/glincludes.h"
+#include "../camera/camera.h"
 
 struct MeshIndex;
 struct MeshVertex;
@@ -20,6 +21,9 @@ class Mesh {
 
         // binding GPU data
         GLuint InstanceVBO;
+
+        // camera position
+        GLuint CameraPos;
 
         // max instance
         GLsizei MaxInstance = 10000;
@@ -40,8 +44,14 @@ class Mesh {
         // update instance item
         void UpdateInstances();
 
+        // set camera position loc
+        void SetCamPos(GLuint shader);
+
         // draw instances
-        void Draw(GLuint shader, GLint viewProjLoc, const glm::mat4& viewProj);
+        void Draw(GLuint shader, GLint viewProjLoc, Camera* camera);
+
+        // add instance
+        void AddInstance(const glm::vec3& position,const glm::vec3& rotation = glm::vec3(0.0f),const glm::vec3& scale = glm::vec3(0.1f));
 
 };
 
