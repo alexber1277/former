@@ -60,8 +60,8 @@ App::App(std::string name) {
     gui = new Gui(window);
     shader = new Shader();
 
-    if (!LoadShaderItem("grid",shader->Grid)) { LogErr("Failed to load grid shader"); }
-    if (!LoadShaderItem("mesh",shader->Grid)) { LogErr("Failed to load grid shader"); }
+    if (!LoadShaderItem("grid",shader->GridShader)) { LogErr("Failed to load grid shader"); }
+    if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
     shader->InitializeUniforms();
 
     BaseCallback();
@@ -190,16 +190,16 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 }
 
 void App::DrawGrid() {
-    glUseProgram(shader->Grid);
-    glBindVertexArray(shader->GridVAO);
-    //glBindBuffer(shader->GridVBO);
+    glUseProgram(shader->GridShader);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    glUniformMatrix4fv(shader->GridCameraProjection, 1, GL_FALSE, glm::value_ptr(camera->viewProjection));
-    glDrawArrays(GL_LINES, 0, 84);
+    glUniformMatrix4fv(shader->GridModel, 1, GL_FALSE, &shader->GridDefault[0][0]);
+    glUniformMatrix4fv(shader->GridCameraProjection, 1, GL_FALSE, &camera->viewProjection[0][0]);
+    glBindVertexArray(shader->GridVAO);
+    glDrawArrays(GL_LINES, 0, shader->GridVertices.size());
+    glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glBindVertexArray(0);
     glUseProgram(0);
 }
 
