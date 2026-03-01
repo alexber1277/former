@@ -265,14 +265,15 @@ int App::StartedRT() {
         glfwPollEvents();
         PreCalculate();
         // =================================
-
         for (auto& mesh : meshes) {
-            mesh.Draw(shader->MeshShader,shader->MeshCameraProjection,camera);
+            mesh.Draw(shader->MeshShader,shader->MeshCameraProjection, camera);
         }
-
-        //Log(std::to_string(PickInstance()));
-
         // =================================
+        // RenderPickPass();
+        // =================================
+        // CheckPickSelected();
+        // =================================
+
         gui->RenderPanels();
         glfwSwapBuffers(window);
     }

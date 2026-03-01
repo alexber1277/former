@@ -41,6 +41,7 @@ public:
         MeshCameraProjection = glGetUniformLocation(MeshShader, "viewProjection");
     }
 
+    // create grid
     void GenGridVerticles() {
         GridVertices.clear();
         for (int i = -GridHalf; i <= GridHalf; ++i) {
