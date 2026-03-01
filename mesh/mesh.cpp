@@ -148,9 +148,9 @@ void Mesh::Draw(GLuint shader, GLint viewProjLoc, Camera* camera) {
     glUseProgram(shader);
     glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &camera->viewProjection[0][0]);
     glUniform3fv(CameraPos, 1, glm::value_ptr(camera->position));
-    glUniform3fv(MatAlbedo, 1, &MatAlbedoVal[0]);
+    glUniform4fv(MatAlbedo, 1, &MatAlbedoVal[0]);
     glUniform1f(MatRoughnes, MatRoughnesVal);
-    glUniform1f(MatRoughnes, MatMetalicVal);
+    glUniform1f(MatMetalic, MatMetalicVal);
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES,indices.size() * 3,GL_UNSIGNED_INT,0,instances.size());
     glBindVertexArray(0);

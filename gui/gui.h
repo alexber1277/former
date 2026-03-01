@@ -4,6 +4,8 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
+class App;
+
 class Gui {
     public:
         Gui(GLFWwindow* window) {
@@ -16,6 +18,9 @@ class Gui {
         void EndFrame();
         void RightPanel();
         void RenderPanels();
+        void SetPointer(App* appTs) {
+            app = appTs;
+        };
 
         float value1;
         float value2;
@@ -23,5 +28,5 @@ class Gui {
 
     private:
         GLFWwindow* m_Window;
-
+        App* app = nullptr;
 };

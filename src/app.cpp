@@ -209,6 +209,10 @@ void App::DrawGrid() {
     glUseProgram(0);
 }
 
+Mesh& App::GetMeshByIndex(size_t index) {
+    return meshes[index];
+}
+
 void App::LoadMeshes() {
     meshes = Mesh::LoadMeshes("assets/cube.obj");
     for (auto& mesh : meshes) {
@@ -248,6 +252,7 @@ void App::Cleared() {
 }
 
 int App::StartedRT() {
+    gui->SetPointer(this);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
@@ -258,7 +263,7 @@ int App::StartedRT() {
         }
 
         // =================================
-        //gui->RenderPanels();
+        gui->RenderPanels();
         glfwSwapBuffers(window);
     }
     return 0;
