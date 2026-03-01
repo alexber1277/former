@@ -20,7 +20,7 @@ class Mesh {
         GLuint MatMetalic;
 
         // val materal
-        glm::vec4 MatAlbedoVal = glm::vec4(0.5);
+        glm::vec4 MatAlbedoVal = glm::vec4(1.0);
         float MatRoughnesVal = 0.5;
         float MatMetalicVal = 0.5;
 
