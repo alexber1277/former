@@ -1,6 +1,6 @@
 #pragma once
+#include <string>
 #include <vector>
-
 #include "../gl/glincludes.h"
 
 struct MeshIndex;
@@ -18,6 +18,9 @@ class Mesh {
         GLuint VAO;
         GLuint EBO;
 
+        // load mesh default
+        static std::vector<Mesh> LoadMeshes(const std::string& path);
+
         // mesh data
         std::vector<MeshVertex> vertices;
         std::vector<MeshIndex> indices;
@@ -34,7 +37,7 @@ struct MeshInstance {
 
     glm::vec3 position{0.0f,0.0f,0.0f};
     glm::vec3 rotation{0.0f,0.0f,0.0f};;
-    glm::vec3 scale{0.1f,0.1f,0.1f};;
+    glm::vec3 scale{1.0f,1.0f,1.0f};;
 
     void UpdateModel() {
         glm::mat4 t = glm::translate(glm::mat4(1.0f), position);

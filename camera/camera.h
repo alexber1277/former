@@ -3,7 +3,7 @@
 
 class Camera {
 public:
-    glm::vec3 position = {10.0f, 10.0f, 10.0f};
+    glm::vec3 position = {50.0f, 50.0f, 50.0f};
     glm::vec3 target   = {0.0f, 0.0f, 0.0f};
     glm::vec3 up       = {0.0f, 0.0f, 1.0f};
 
@@ -14,12 +14,12 @@ public:
     float fov = 60.0f;
     float aspect = 0.0f;
 
-    float nearPlane = 0.5f;
-    float farPlane  = 2000.0f;
+    float nearPlane = 0.01f;
+    float farPlane  = 100.0f;
 
     float orbitSpeed = 0.5f;
-    float panSpeed   = 0.1f;
-    float zoomSpeed  = 0.1f;
+    float panSpeed   = 0.5f;
+    float zoomSpeed  = 0.5f;
 
     void Orbit(float dx, float dy);
     void Pan(float dx, float dy);

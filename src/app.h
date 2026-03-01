@@ -3,25 +3,24 @@
 #include "../gl/glincludes.h"
 #include "../camera/camera.h"
 #include "../input/input.h"
-#include "../object/object.h"
+#include "../mesh/mesh.h"
 #include "../gui/gui.h"
+#include "../shaders/shader.h"
 
 class App {
     public:
         App(std::string name);
 
-        int Started();
         int StartedRT();
-        void Calculate();
         void BaseCallback();
         void LoadMeshes();
 
         void CalcFPS();
         void PreCalculate();
 
-        void CreateGPUBuffers();
-        void RenderFullscreenQuad();
-        void ShowGrid(GLuint shader, int lineCount);
+        void Cleared();
+        void DrawGrid();
+
         bool LoadShaderItem(const std::string& name, GLuint& program);
 
         static void Resize(GLFWwindow* wind, int width, int height);
@@ -29,22 +28,17 @@ class App {
 
         std::string fps;
 
-        std::vector<Object> objects;
-        std::vector<Material> materials;
-        std::vector<InstanceGPU> instances;
-
-        void UploadToGPU();
-
-        GLuint CreateGrid(int size = 10, float step = 1.0f);
         ~App();
     private:
         void Log(const std::string& msg);
+        void LogErr(const std::string& msg);
         glm::vec4 background = glm::vec4(0.2f, 0.2f, 0.25f, 1.0f);
         GLFWwindow* window;
         std::string windowName;
         Camera* camera;
         Input* input;
         Gui* gui;
+        Shader* shader;
 
         int ScreenWidth;
         int ScreenHeight;

@@ -18,7 +18,6 @@ App::App(std::string name) {
     glfwWindowHint(GLFW_DEPTH_BITS, 32);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-    //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     window = glfwCreateWindow(800, 600, name.c_str(), nullptr, nullptr);
     if (!window) {
@@ -59,6 +58,11 @@ App::App(std::string name) {
     camera = new Camera();
     input = new Input(window);
     gui = new Gui(window);
+    shader = new Shader();
+
+    if (!LoadShaderItem("grid",shader->Grid)) { LogErr("Failed to load grid shader"); }
+    if (!LoadShaderItem("mesh",shader->Grid)) { LogErr("Failed to load grid shader"); }
+    shader->InitializeUniforms();
 
     BaseCallback();
 
@@ -80,6 +84,10 @@ void App::Resize(GLFWwindow* window, int width, int height) {
 
 void App::Log(const std::string& msg) {
     std::cout << msg << std::endl;
+}
+
+void App::LogErr(const std::string& msg) {
+    throw std::runtime_error(msg);
 }
 
 void App::BaseCallback() {
@@ -130,8 +138,8 @@ std::string App::LoadFile(std::string path) {
 
 bool App::LoadShaderItem(const std::string& name, GLuint& program) {
     std::string basePath = "shaders/";
-    std::string vertPath = basePath + name + ".vs";
-    std::string fragPath = basePath + name + ".fs";
+    std::string vertPath = basePath + name + "/vertex.vs";
+    std::string fragPath = basePath + name + "/fragment.fs";
     std::string vertCode = LoadFile(vertPath);
     std::string fragCode = LoadFile(fragPath);
     if (vertCode.empty() || fragCode.empty()) {
@@ -181,18 +189,22 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
     return true;
 }
 
+void App::DrawGrid() {
+    glUseProgram(shader->Grid);
+    glBindVertexArray(shader->GridVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glUniformMatrix4fv(shader->GridCameraProjection, 1, GL_FALSE, glm::value_ptr(camera->viewProjection));
+    glDrawArrays(GL_LINES, 0, 84);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
 void App::LoadMeshes() {
-    objects = Object::LoadObjs("assets/cube.obj");
-    for (uint32_t i = 0; i < objects.size(); ++i) {
-        Instance inst;
-        inst.ObjectId = i;
-        inst.MaterialId = 0;
-        instances.push_back(inst.GetInstanceGPU());
-    }
-    if (materials.empty()) {
-        Material mat;
-        materials.push_back(mat);
-    }
+    std::vector<Mesh> meshes = Mesh::LoadMeshes("assets/meshes.obj");
+
 }
 
 void App::CalcFPS() {
@@ -209,12 +221,18 @@ void App::CalcFPS() {
 
 void App::PreCalculate() {
     CalcFPS();
-    std::string title = nameApp + " beta [" + fps+ " FPS]";
-    glfwSetWindowTitle(window, title.c_str());
+    std::string title = nameApp + " [BETA][" + fps+ " FPS]";
     glViewport(0, 0, ScreenWidth, ScreenHeight);
+    glfwSetWindowTitle(window, title.c_str());
     input->Update();
     input->Handlers(camera);
     camera->CamCalculated(ScreenWidth,ScreenHeight);
+    Cleared();
+}
+
+void App::Cleared() {
+    glClearColor(background.r, background.g, background.b, background.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 int App::StartedRT() {
@@ -223,7 +241,10 @@ int App::StartedRT() {
         glfwPollEvents();
         PreCalculate();
 
-        gui->RenderPanels();
+        DrawGrid();
+
+
+        //gui->RenderPanels();
         glfwSwapBuffers(window);
     }
     return 0;

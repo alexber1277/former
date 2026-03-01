@@ -42,6 +42,7 @@ set(SOURCES
         gui/gui.h
         mesh/mesh.cpp
         mesh/mesh.h
+        shaders/shader.h
 )
 
 list(APPEND SOURCES ${IMGUI_SOURCES})
