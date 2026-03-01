@@ -15,7 +15,7 @@ public:
     float aspect = 0.0f;
 
     float nearPlane = 0.01f;
-    float farPlane  = 100.0f;
+    float farPlane  = 1000.0f;
 
     float orbitSpeed = 0.5f;
     float panSpeed   = 0.5f;

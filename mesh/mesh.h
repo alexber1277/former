@@ -13,10 +13,16 @@ class Mesh {
         // original ID
         uint32_t ID;
 
-        // binding GPU
+        // binding GPU data
         GLuint VBO;
         GLuint VAO;
         GLuint EBO;
+
+        // binding GPU data
+        GLuint InstanceVBO;
+
+        // max instance
+        GLsizei MaxInstance = 10000;
 
         // load mesh default
         static std::vector<Mesh> LoadMeshes(const std::string& path);
@@ -27,6 +33,15 @@ class Mesh {
 
         // instance list
         std::vector<MeshInstance> instances;
+
+        // gpu upload
+        void UploadToGPU();
+
+        // update instance item
+        void UpdateInstances();
+
+        // draw instances
+        void Draw(GLuint shader, GLint viewProjLoc, const glm::mat4& viewProj);
 
 };
 

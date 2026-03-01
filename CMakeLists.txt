@@ -36,8 +36,6 @@ set(SOURCES
         camera/camera.h
         input/input.cpp
         input/input.h
-        object/object.cpp
-        object/object.h
         gui/gui.cpp
         gui/gui.h
         mesh/mesh.cpp

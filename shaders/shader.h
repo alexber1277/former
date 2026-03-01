@@ -18,11 +18,10 @@ public:
 
     // MESH =========================================
     GLuint MeshShader = 0;
-    GLuint ModelCameraProjection = 0;
+    GLuint MeshCameraProjection = 0;
 
-    void InitializeUniforms() {
-
-        // Grid ========================================================================
+    // Grid ========================================================================
+    void InitializeUniformsGrid() {
         GenGridVerticles();
         GridCameraProjection = glGetUniformLocation(GridShader, "u_ViewProjection");
         GridModel = glGetUniformLocation(GridShader, "u_Model");
@@ -35,11 +34,12 @@ public:
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-
-        // Mesh ========================================================================
-        ModelCameraProjection = glGetUniformLocation(MeshShader, "viewProjection");
-
     };
+
+    // Mesh ========================================================================
+    void InitializeUniformsMesh() {
+        MeshCameraProjection = glGetUniformLocation(MeshShader, "viewProjection");
+    }
 
     void GenGridVerticles() {
         GridVertices.clear();

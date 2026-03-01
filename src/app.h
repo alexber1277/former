@@ -40,6 +40,8 @@ class App {
         Gui* gui;
         Shader* shader;
 
+        std::vector<Mesh> meshes;
+
         int ScreenWidth;
         int ScreenHeight;
 

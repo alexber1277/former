@@ -34,18 +34,22 @@ void Camera::Pan(float dx, float dy) {
     glm::vec3 forward = glm::normalize(target - position);
     glm::vec3 right   = glm::normalize(glm::cross(forward, up));
     glm::vec3 camUp   = glm::normalize(glm::cross(right, forward));
-
-    glm::vec3 move = (-right * dx + camUp * dy) * panSpeed;
-
+    float distance = glm::length(target - position);
+    float scale = distance * 0.002f;
+    glm::vec3 move = (-right * dx + camUp * dy) * panSpeed * scale;
     position += move;
     target   += move;
 }
 
-void Camera::Zoom(float delta) {
+void Camera::Zoom(float delta)
+{
     glm::vec3 forward = glm::normalize(target - position);
     float distance = glm::length(target - position);
 
-    float newDistance = distance - delta * zoomSpeed;
+    float factor = 1.0f - delta * zoomSpeed * 0.1f;
+    factor = glm::clamp(factor, 0.1f, 10.0f);
+
+    float newDistance = distance * factor;
     newDistance = glm::max(newDistance, 0.1f);
 
     position = target - forward * newDistance;

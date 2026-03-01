@@ -31,6 +31,7 @@ App::App(std::string name) {
     glfwSetFramebufferSizeCallback(window, App::Resize);
     glfwSwapInterval(0);
     glfwMaximizeWindow(window);
+    glfwGetFramebufferSize(window,&ScreenWidth,&ScreenHeight);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {
@@ -56,13 +57,17 @@ App::App(std::string name) {
     glDepthFunc(GL_LESS);
 
     camera = new Camera();
+    camera->CamCalculated(ScreenWidth, ScreenHeight);
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
+
     input = new Input(window);
     gui = new Gui(window);
     shader = new Shader();
 
     if (!LoadShaderItem("grid",shader->GridShader)) { LogErr("Failed to load grid shader"); }
     if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
-    shader->InitializeUniforms();
+    shader->InitializeUniformsGrid();
+    shader->InitializeUniformsMesh();
 
     BaseCallback();
 
@@ -99,6 +104,7 @@ void App::BaseCallback() {
             if (app) {
                 app->ScreenWidth = width;
                 app->ScreenHeight = height;
+                app->camera->CamCalculated(width, height);
             }
         }
     );
@@ -204,7 +210,9 @@ void App::DrawGrid() {
 }
 
 void App::LoadMeshes() {
-    std::vector<Mesh> meshes = Mesh::LoadMeshes("assets/meshes.obj");
+    meshes = Mesh::LoadMeshes("assets/cube.obj");
+
+
 
 }
 
@@ -229,6 +237,7 @@ void App::PreCalculate() {
     input->Handlers(camera);
     camera->CamCalculated(ScreenWidth,ScreenHeight);
     Cleared();
+    DrawGrid();
 }
 
 void App::Cleared() {
@@ -237,14 +246,21 @@ void App::Cleared() {
 }
 
 int App::StartedRT() {
-    glViewport(0, 0, ScreenWidth, ScreenHeight);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
+        // =================================
 
-        DrawGrid();
+        for (auto& mesh : meshes) {
+            mesh.Draw(
+                shader->MeshShader,
+                shader->MeshCameraProjection,
+                camera->viewProjection
+            );
+        }
 
 
+        // =================================
         //gui->RenderPanels();
         glfwSwapBuffers(window);
     }
