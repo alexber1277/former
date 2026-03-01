@@ -209,6 +209,13 @@ void App::DrawGrid() {
     glUseProgram(0);
 }
 
+int App::PickInstance() {
+    int selectedInstance = -1;
+
+
+    return selectedInstance;
+}
+
 Mesh& App::GetMeshByIndex(size_t index) {
     return meshes[index];
 }
@@ -217,8 +224,9 @@ void App::LoadMeshes() {
     meshes = Mesh::LoadMeshes("assets/cube.obj");
     for (auto& mesh : meshes) {
         mesh.SetCamPos(shader->MeshShader);
-        mesh.UpdateInstances();
         mesh.AttachMaterial(shader->MeshShader);
+        mesh.AddInstance(glm::vec3(-4, -4, 3));
+        mesh.UpdateInstances();
     }
 }
 
@@ -261,6 +269,8 @@ int App::StartedRT() {
         for (auto& mesh : meshes) {
             mesh.Draw(shader->MeshShader,shader->MeshCameraProjection,camera);
         }
+
+        //Log(std::to_string(PickInstance()));
 
         // =================================
         gui->RenderPanels();

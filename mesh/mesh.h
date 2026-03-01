@@ -20,9 +20,9 @@ class Mesh {
         GLuint MatMetalic;
 
         // val materal
-        glm::vec4 MatAlbedoVal = glm::vec4(1.0);
-        float MatRoughnesVal = 0.5;
-        float MatMetalicVal = 0.5;
+        glm::vec4 MatAlbedoVal = glm::vec4(0.75,0.75,0.75,1.0);
+        float MatRoughnesVal = 0.9;
+        float MatMetalicVal = 0.2;
 
         // binding GPU data
         GLuint VBO;

@@ -21,6 +21,8 @@ class App {
         void Cleared();
         void DrawGrid();
 
+        int PickInstance();
+
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);
 
