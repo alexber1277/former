@@ -192,6 +192,7 @@ bool App::LoadShaderItem(const std::string& name, GLuint& program) {
 void App::DrawGrid() {
     glUseProgram(shader->Grid);
     glBindVertexArray(shader->GridVAO);
+    //glBindBuffer(shader->GridVBO);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glUniformMatrix4fv(shader->GridCameraProjection, 1, GL_FALSE, glm::value_ptr(camera->viewProjection));
