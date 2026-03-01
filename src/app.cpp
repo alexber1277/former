@@ -214,6 +214,7 @@ void App::LoadMeshes() {
     for (auto& mesh : meshes) {
         mesh.SetCamPos(shader->MeshShader);
         mesh.UpdateInstances();
+        mesh.AttachMaterial(shader->MeshShader);
     }
 }
 
@@ -256,9 +257,8 @@ int App::StartedRT() {
             mesh.Draw(shader->MeshShader,shader->MeshCameraProjection,camera);
         }
 
-
         // =================================
-        gui->RenderPanels();
+        //gui->RenderPanels();
         glfwSwapBuffers(window);
     }
     return 0;

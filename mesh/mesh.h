@@ -14,6 +14,16 @@ class Mesh {
         // original ID
         uint32_t ID;
 
+        // loc material
+        GLuint MatAlbedo;
+        GLuint MatRoughnes;
+        GLuint MatMetalic;
+
+        // val materal
+        glm::vec4 MatAlbedoVal = glm::vec4(0.5);
+        float MatRoughnesVal = 0.5;
+        float MatMetalicVal = 0.5;
+
         // binding GPU data
         GLuint VBO;
         GLuint VAO;
@@ -41,11 +51,16 @@ class Mesh {
         // gpu upload
         void UploadToGPU();
 
-        // update instance item
+        // update all instances
         void UpdateInstances();
+
+        void UpdateInstance(size_t index);
 
         // set camera position loc
         void SetCamPos(GLuint shader);
+
+        // attach material
+        void AttachMaterial(GLuint shader);
 
         // draw instances
         void Draw(GLuint shader, GLint viewProjLoc, Camera* camera);

@@ -64,6 +64,12 @@ void Mesh::SetCamPos(GLuint shader) {
     CameraPos = glGetUniformLocation(shader, "cameraPos");
 }
 
+void Mesh::AttachMaterial(GLuint shader) {
+    MatAlbedo = glGetUniformLocation(shader, "mat_albedo");
+    MatRoughnes = glGetUniformLocation(shader, "mat_roughness");
+    MatMetalic = glGetUniformLocation(shader, "mat_metalic");
+}
+
 void Mesh::UploadToGPU() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -118,6 +124,18 @@ void Mesh::UpdateInstances() {
     glBufferData(GL_ARRAY_BUFFER, models.size() * sizeof(glm::mat4), models.data(), GL_DYNAMIC_DRAW);
 }
 
+void Mesh::UpdateInstance(size_t index) {
+    if (index >= instances.size()){ return; }
+    instances[index].UpdateModel();
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        index * sizeof(glm::mat4),
+        sizeof(glm::mat4),
+        &instances[index].model
+    );
+}
+
 void Mesh::AddInstance(const glm::vec3& position,const glm::vec3& rotation,const glm::vec3& scale) {
     MeshInstance instance;
     instance.position = position;
@@ -130,6 +148,9 @@ void Mesh::Draw(GLuint shader, GLint viewProjLoc, Camera* camera) {
     glUseProgram(shader);
     glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &camera->viewProjection[0][0]);
     glUniform3fv(CameraPos, 1, glm::value_ptr(camera->position));
+    glUniform3fv(MatAlbedo, 1, &MatAlbedoVal[0]);
+    glUniform1f(MatRoughnes, MatRoughnesVal);
+    glUniform1f(MatRoughnes, MatMetalicVal);
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES,indices.size() * 3,GL_UNSIGNED_INT,0,instances.size());
     glBindVertexArray(0);
