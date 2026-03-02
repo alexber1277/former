@@ -22,12 +22,17 @@ class App {
         void DrawGrid();
 
         int PickInstance();
+        void Picked();
+        void PostDraw();
 
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);
 
         static void Resize(GLFWwindow* wind, int width, int height);
         std::string LoadFile(std::string name);
+
+        int SelectedMesh = 0;
+        int SelectedInstance = 0;
 
         std::string fps;
 

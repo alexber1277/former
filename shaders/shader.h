@@ -6,6 +6,9 @@
 class Shader {
 public:
 
+    // PICK =========================================
+    GLuint PickFBO = 0;
+
     // GRID =========================================
     GLuint GridShader = 0;
     GLuint GridVAO = 0;
@@ -19,6 +22,9 @@ public:
     // MESH =========================================
     GLuint MeshShader = 0;
     GLuint MeshCameraProjection = 0;
+
+    // PBO ==========================================
+    GLuint PickPBO;
 
     // Grid ========================================================================
     void InitializeUniformsGrid() {
@@ -50,6 +56,13 @@ public:
             GridVertices.push_back({ -GridHalf, (float)i, 0.0f });
             GridVertices.push_back({  GridHalf, (float)i, 0.0f });
         }
+    }
+
+    void CreatePickPBO() {
+        glGenBuffers(1, &PickPBO);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, PickPBO);
+        glBufferData(GL_PIXEL_PACK_BUFFER, sizeof(GLuint) * 2, nullptr, GL_STREAM_READ);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     }
 
 };

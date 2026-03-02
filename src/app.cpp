@@ -68,6 +68,7 @@ App::App(std::string name) {
     if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
     shader->InitializeUniformsGrid();
     shader->InitializeUniformsMesh();
+    shader->CreatePickPBO();
 
     BaseCallback();
 
@@ -209,13 +210,6 @@ void App::DrawGrid() {
     glUseProgram(0);
 }
 
-int App::PickInstance() {
-    int selectedInstance = -1;
-
-
-    return selectedInstance;
-}
-
 Mesh& App::GetMeshByIndex(size_t index) {
     return meshes[index];
 }
@@ -226,6 +220,7 @@ void App::LoadMeshes() {
         mesh.SetCamPos(shader->MeshShader);
         mesh.AttachMaterial(shader->MeshShader);
         mesh.AddInstance(glm::vec3(-4, -4, 3));
+        mesh.AddInstance(glm::vec3(-8, -8, 6));
         mesh.UpdateInstances();
     }
 }
@@ -259,22 +254,43 @@ void App::Cleared() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
+void App::Picked() {
+    int x = input->GetMouseX();
+    int y = ScreenHeight - input->GetMouseY();
+    if (x < 0 || x >= ScreenWidth || y < 0 || y >= ScreenHeight) {
+        SelectedMesh = -1;
+        SelectedInstance = -1;
+        return;
+    }
+    GLuint pixel[2] = {0, 0};
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, shader->PickFBO);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glReadPixels(x, y, 1, 1, GL_RG_INTEGER, GL_UNSIGNED_INT, pixel);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    if (pixel[0] == 0) {
+        SelectedMesh = -1;
+        SelectedInstance = -1;
+        return;
+    }
+
+    SelectedMesh     = static_cast<int>(pixel[0]) - 1;
+    SelectedInstance = static_cast<int>(pixel[1]) - 1;
+}
+
 int App::StartedRT() {
     gui->SetPointer(this);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
-        // =================================
+        // =============================
+
         for (auto& mesh : meshes) {
             mesh.Draw(shader->MeshShader,shader->MeshCameraProjection, camera);
         }
-        // =================================
-        // RenderPickPass();
-        // =================================
-        // CheckPickSelected();
-        // =================================
 
-        gui->RenderPanels();
+        std::cout << SelectedMesh << SelectedInstance << std::endl;
+
+        // =============================
         glfwSwapBuffers(window);
     }
     return 0;
