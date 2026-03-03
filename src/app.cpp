@@ -203,11 +203,13 @@ void App::DrawGrid() {
     glUseProgram(shader->GridShader);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
     glUniformMatrix4fv(shader->GridModel, 1, GL_FALSE, &shader->GridDefault[0][0]);
     glUniformMatrix4fv(shader->GridCameraProjection, 1, GL_FALSE, &camera->viewProjection[0][0]);
     glBindVertexArray(shader->GridVAO);
     glDrawArrays(GL_LINES, 0, shader->GridVertices.size());
     glBindVertexArray(0);
+    glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glUseProgram(0);
@@ -276,52 +278,20 @@ void App::DrawMeshes() {
 
 void App::DrawPicking() {
     glBindFramebuffer(GL_FRAMEBUFFER, shader->PickingFBO);
-    glDisable(GL_MULTISAMPLE);
-    for (auto& mesh : meshes) {
-        glUniform1ui(shader->PickMeshIDProjection, (GLuint)mesh.ID);
-        mesh.Draw(shader->PickShader,shader->PickCameraProjection, camera);
-    }
-    GLuint pixelID[2] = {0,0};
-    glReadPixels(input->GetMouseX(), ScreenHeight - input->GetMouseY() - 1,1, 1, GL_RG_INTEGER, GL_UNSIGNED_INT, pixelID);
-    SelectedMesh = pixelID[0];
-    SelectedInstance = pixelID[1];
-    if (SelectedMesh == 0 && SelectedInstance == 0) {
-        SelectedMesh = -1;
-        SelectedInstance = -1;
-    }
-    glEnable(GL_MULTISAMPLE);
-}
-
-void App::DrawPickingTest() {
-    // 1️⃣ Рендер пикера в PickingFBO
-    glBindFramebuffer(GL_FRAMEBUFFER, shader->PickingFBO);
-    glViewport(0, 0, ScreenWidth, ScreenHeight);
-    glClearColor(0,0,0,0);
+    glViewport(0,0,ScreenWidth,ScreenHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
     glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-
-    glUseProgram(shader->PickShader);
+    glEnable(GL_DEPTH_TEST);
     for (auto& mesh : meshes) {
-        glUniform1ui(shader->PickMeshIDProjection, (GLuint)mesh.ID);
+        glUniform1ui(shader->PickMeshIDProjection, mesh.ID);
         mesh.Draw(shader->PickShader, shader->PickCameraProjection, camera);
     }
-
-    // 2️⃣ Копируем содержимое PickingFBO в нулевой framebuffer для визуализации
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, shader->PickingFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // экран
-    glBlitFramebuffer(
-        0, 0, ScreenWidth, ScreenHeight,   // src rect
-        0, 0, ScreenWidth, ScreenHeight,   // dst rect
-        GL_COLOR_BUFFER_BIT,
-        GL_NEAREST                          // важно: пиксельное копирование
-    );
+    unsigned int data[2] = {0,0};
+    glReadPixels(input->GetMouseX(),ScreenHeight - input->GetMouseY(),1,1,GL_RG_INTEGER,GL_UNSIGNED_INT,data);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    SelectedMesh = data[0];
+    SelectedInstance = data[1];
 }
-
 
 int App::StartedRT() {
     gui->SetPointer(this);
@@ -330,13 +300,11 @@ int App::StartedRT() {
         PreCalculate();
 
         // 1. MAIN MESH =============================
-        //DrawMeshes();
+        DrawMeshes();
 
         // 2. PICKING ===============================
-        //DrawPicking();
-        DrawPickingTest();
+        DrawPicking();
 
-        //std::cout << SelectedMesh << " - " << SelectedInstance << std::endl;
         // =======================================
         glfwSwapBuffers(window);
     }

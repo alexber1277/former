@@ -22,7 +22,6 @@ class App {
         void DrawGrid();
 
         void DrawPicking();
-        void DrawPickingTest();
         void DrawMeshes();
 
         Mesh& GetMeshByIndex(size_t index);
