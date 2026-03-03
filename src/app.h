@@ -21,9 +21,9 @@ class App {
         void Cleared();
         void DrawGrid();
 
-        int PickInstance();
-        void Picked();
-        void PostDraw();
+        void DrawPicking();
+        void DrawPickingTest();
+        void DrawMeshes();
 
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);

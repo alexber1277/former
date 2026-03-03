@@ -4,7 +4,6 @@ in vec3 v_Normal;
 in vec3 v_WorldPos;
 
 layout(location = 0) out vec4  FragColor;
-layout(location = 1) out uvec2 outID;
 
 uniform vec3 cameraPos;
 
@@ -12,9 +11,6 @@ uniform vec3 cameraPos;
 uniform vec4 mat_albedo;
 uniform float mat_metalic;
 uniform float mat_roughness;
-
-uniform uint meshID;
-flat in uint v_InstanceID;
 
 void main() {
     vec3 N = normalize(v_Normal);
@@ -31,7 +27,5 @@ void main() {
     vec3 diffuse = diff * mat_albedo.rgb;
 
     vec3 color = ambient + diffuse + spec;
-
-    outID = uvec2(meshID + 1, v_InstanceID + 1);
     FragColor = vec4(color, mat_albedo.a);
 }

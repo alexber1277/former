@@ -10,16 +10,9 @@ uniform mat4 viewProjection;
 out vec3 v_Normal;
 out vec3 v_WorldPos;
 
-flat out uint v_InstanceID;
-
 void main() {
     vec4 worldPos = a_Model * vec4(a_Position, 1.0);
-
     v_WorldPos = worldPos.xyz;
-
-    // нормаль трансформируем только матрицей модели
     v_Normal = mat3(transpose(inverse(a_Model))) * a_Normal;
-
-    v_InstanceID = uint(gl_InstanceID);
     gl_Position = viewProjection * worldPos;
 }

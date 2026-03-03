@@ -7,7 +7,20 @@ class Shader {
 public:
 
     // PICK =========================================
-    GLuint PickFBO = 0;
+    GLuint PickShader = 0;
+    GLuint PickingFBO = 0;
+    GLuint PickingIDTex = 0;
+    GLuint PickingDepth = 0;
+    GLuint PickCameraProjection = 0;
+    GLuint PickMeshIDProjection = 0;
+
+    // MAIN =========================================
+    GLuint MainFBO = 0;
+    GLuint MainColor = 0;
+    GLuint MainDepth = 0;
+    GLuint MainID = 0;
+    GLuint ResolveFBO = 0;
+    GLuint ResolveTex = 0;
 
     // GRID =========================================
     GLuint GridShader = 0;
@@ -22,9 +35,6 @@ public:
     // MESH =========================================
     GLuint MeshShader = 0;
     GLuint MeshCameraProjection = 0;
-
-    // PBO ==========================================
-    GLuint PickPBO;
 
     // Grid ========================================================================
     void InitializeUniformsGrid() {
@@ -47,6 +57,12 @@ public:
         MeshCameraProjection = glGetUniformLocation(MeshShader, "viewProjection");
     }
 
+    // Pick ========================================================================
+    void InitializeUniformsPick() {
+        PickCameraProjection = glGetUniformLocation(PickShader, "viewProjection");
+        PickMeshIDProjection = glGetUniformLocation(PickShader, "meshID");
+    }
+
     // create grid
     void GenGridVerticles() {
         GridVertices.clear();
@@ -58,11 +74,32 @@ public:
         }
     }
 
-    void CreatePickPBO() {
-        glGenBuffers(1, &PickPBO);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, PickPBO);
-        glBufferData(GL_PIXEL_PACK_BUFFER, sizeof(GLuint) * 2, nullptr, GL_STREAM_READ);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    void CreatePickingFramebuffer(int width, int height) {
+        glGenFramebuffers(1, &PickingFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, PickingFBO);
+
+        glGenTextures(1, &PickingIDTex);
+        glBindTexture(GL_TEXTURE_2D, PickingIDTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32UI, width, height, 0, GL_RG_INTEGER, GL_UNSIGNED_INT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PickingIDTex, 0);
+
+        glGenRenderbuffers(1, &PickingDepth);
+        glBindRenderbuffer(GL_RENDERBUFFER, PickingDepth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, PickingDepth);
+
+        GLenum attachments[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, attachments);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cout << "PickingFBO not complete\n";
+            std::abort();
+        }
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
 };
