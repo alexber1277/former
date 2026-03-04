@@ -64,14 +64,6 @@ App::App(std::string name) {
     gui = new Gui(window);
     shader = new Shader();
 
-    if (!LoadShaderItem("grid",shader->GridShader)) { LogErr("Failed to load grid shader"); }
-    if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
-    if (!LoadShaderItem("pick",shader->PickShader)) { LogErr("Failed to load pick shader"); }
-    shader->InitializeUniformsGrid();
-    shader->InitializeUniformsMesh();
-    shader->InitializeUniformsPick();
-    shader->CreatePickingFramebuffer(ScreenWidth, ScreenHeight);
-
     BaseCallback();
 
     std::cout << "========================================================" << std::endl;
@@ -219,6 +211,18 @@ Mesh& App::GetMeshByIndex(size_t index) {
     return meshes[index];
 }
 
+void App::LoadShaders() {
+    if (!LoadShaderItem("grid",shader->GridShader)) { LogErr("Failed to load grid shader"); }
+    if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
+    if (!LoadShaderItem("pick",shader->PickShader)) { LogErr("Failed to load pick shader"); }
+    if (!LoadShaderItem("select",shader->SelectShader)) { LogErr("Failed to load select shader"); }
+    shader->InitializeUniformsGrid();
+    shader->InitializeUniformsMesh();
+    shader->InitializeUniformsPick();
+    shader->InitializeUniformsSelect();
+    shader->CreatePickingFramebuffer(ScreenWidth, ScreenHeight);
+}
+
 void App::LoadMeshes() {
     meshes = Mesh::LoadMeshes("assets/cube.obj");
     for (auto& mesh : meshes) {
@@ -293,8 +297,19 @@ void App::DrawPicking() {
     SelectedInstance = data[1];
 }
 
+void App::DrawHover() {
+    if (SelectedMesh == 0 || SelectedInstance == 0) {
+        return;
+    }
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(shader->SelectShader);
+    meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1, shader->SelectShader, shader->SelectCameraProjection, camera);
+}
+
 int App::StartedRT() {
     gui->SetPointer(this);
+    glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
@@ -305,7 +320,10 @@ int App::StartedRT() {
         // 2. PICKING ===============================
         DrawPicking();
 
-        // =======================================
+        // 3. HOVER =================================
+        DrawHover();
+
+        // ==========================================
         glfwSwapBuffers(window);
     }
 

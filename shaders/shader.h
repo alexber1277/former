@@ -6,6 +6,11 @@
 class Shader {
 public:
 
+    // SELECT =======================================
+    GLuint SelectShader = 0;
+    GLuint SelectCameraProjection = 0;
+    GLuint SelectIndexInstance = 0;
+
     // PICK =========================================
     GLuint PickShader = 0;
     GLuint PickingFBO = 0;
@@ -61,6 +66,12 @@ public:
     void InitializeUniformsPick() {
         PickCameraProjection = glGetUniformLocation(PickShader, "viewProjection");
         PickMeshIDProjection = glGetUniformLocation(PickShader, "meshID");
+    }
+
+    // Select ======================================================================
+    void InitializeUniformsSelect() {
+        SelectCameraProjection = glGetUniformLocation(SelectShader, "viewProjection");
+        SelectIndexInstance = glGetUniformLocation(SelectShader, "indexInstance");
     }
 
     // create grid

@@ -14,6 +14,7 @@ class App {
         int StartedRT();
         void BaseCallback();
         void LoadMeshes();
+        void LoadShaders();
 
         void CalcFPS();
         void PreCalculate();
@@ -23,6 +24,7 @@ class App {
 
         void DrawPicking();
         void DrawMeshes();
+        void DrawHover();
 
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);

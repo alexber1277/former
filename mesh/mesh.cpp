@@ -64,6 +64,23 @@ void Mesh::SetCamPos(GLuint shader) {
     CameraPos = glGetUniformLocation(shader, "cameraPos");
 }
 
+void Mesh::DrawInstance(int instanceIndex, GLuint shader, GLint viewProjLoc, Camera* camera) {
+    if (instanceIndex < 0 || instanceIndex >= instances.size()) {
+        return;
+    }
+    glUseProgram(shader);
+    glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &camera->viewProjection[0][0]);
+    glUniform3fv(CameraPos, 1, glm::value_ptr(camera->position));
+    glUniform4fv(MatAlbedo, 1, &MatAlbedoVal[0]);
+    glUniform1f(MatRoughnes, MatRoughnesVal);
+    glUniform1f(MatMetalic, MatMetalicVal);
+    GLint instanceIndexLoc = glGetUniformLocation(shader, "instanceIndex");
+    glUniform1i(instanceIndexLoc, instanceIndex);
+    glBindVertexArray(VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, indices.size() * 3, GL_UNSIGNED_INT, 0, instances.size());
+    glBindVertexArray(0);
+}
+
 void Mesh::AttachMaterial(GLuint shader) {
     MatAlbedo = glGetUniformLocation(shader, "mat_albedo");
     MatRoughnes = glGetUniformLocation(shader, "mat_roughness");

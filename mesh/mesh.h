@@ -59,6 +59,8 @@ class Mesh {
         // set camera position loc
         void SetCamPos(GLuint shader);
 
+        void DrawInstance(int index, GLuint shader, GLint viewProjLoc, Camera* camera);
+
         // attach material
         void AttachMaterial(GLuint shader);
 
