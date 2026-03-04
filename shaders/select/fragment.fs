@@ -5,12 +5,16 @@ uniform int instanceIndex;
 
 out vec4 FragColor;
 
-void main() {
-    if (v_InstanceID != uint(instanceIndex))
+void main()
+{
+    // рисуем только выбранный инстанс
+    if(v_InstanceID != uint(instanceIndex))
         discard;
 
-    if (!gl_FrontFacing)
+    // можно убрать заливку внутренней части: оставляем только фронтальные грани
+    if(!gl_FrontFacing)
         discard;
 
-    FragColor = vec4(1.0, 0.6, 0.0, 0.01);
+    // делаем очень прозрачный цвет, чтобы центр не перекрывался
+    FragColor = vec4(1.0, 0.6, 0.0, 0.0); // почти полностью прозрачный
 }

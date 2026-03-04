@@ -8,14 +8,15 @@ uniform mat4 viewProjection;
 uniform int instanceIndex;
 flat out uint v_InstanceID;
 
-const float outlineThickness = 1.0;
+const float outlineThickness = 0.1; // регулируемая ширина контура
 
-void main() {
-    // только выбранный инстанс
+void main()
+{
+    // передаём instance ID
     v_InstanceID = gl_InstanceID;
 
-    // смещаем вершины по нормали для контура
-    vec3 normalApprox = normalize(a_Normal); // или normalize(a_Position) если нормалей нет
+    // смещаем вершины только выбранного инстанса
+    vec3 normalApprox = normalize(a_Normal);
     vec3 inflatedPos = a_Position + normalApprox * outlineThickness;
 
     gl_Position = viewProjection * a_Model * vec4(inflatedPos, 1.0);
