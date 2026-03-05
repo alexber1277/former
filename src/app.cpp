@@ -301,11 +301,15 @@ void App::DrawHover() {
     if (SelectedMesh == 0 || SelectedInstance == 0) {
         return;
     }
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     glViewport(0, 0, ScreenWidth, ScreenHeight);
     glEnable(GL_DEPTH_TEST);
     glUseProgram(shader->SelectShader);
     meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1, shader->SelectShader, shader->SelectCameraProjection, camera);
+    glCullFace(GL_BACK);
 }
+
 
 int App::StartedRT() {
     gui->SetPointer(this);
@@ -329,3 +333,16 @@ int App::StartedRT() {
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
