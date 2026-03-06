@@ -36,7 +36,7 @@ class Mesh {
         GLuint CameraPos;
 
         // max instance
-        GLsizei MaxInstance = 10000;
+        GLsizei MaxInstance = 100;
 
         // load mesh default
         static std::vector<Mesh> LoadMeshes(const std::string& path);
@@ -74,6 +74,8 @@ class Mesh {
 
 struct MeshInstance {
 
+    float selected;
+
     uint32_t meshId;
     glm::mat4 model;
 
@@ -90,6 +92,14 @@ struct MeshInstance {
         glm::mat4 s = glm::scale(glm::mat4(1.0f), scale);
         model = t * r * s;
     }
+
+};
+
+struct MeshInstanceGPU {
+
+    glm::mat4 model;
+    float selected;
+    float pad[3];
 
 };
 

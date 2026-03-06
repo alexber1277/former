@@ -24,6 +24,20 @@ float Input::ConsumeScrollDelta() {
     return value;
 }
 
+bool Input::ClickRightMouse() {
+    if (IsMouseDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+        return true;
+    }
+    return false;
+}
+
+bool Input::ClickLeftMouse() {
+    if (IsMouseDown(GLFW_MOUSE_BUTTON_LEFT)) {
+        return true;
+    }
+    return false;
+}
+
 void Input::Handlers(Camera* camera) {
     if (IsMouseDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         if (IsKeyDown(GLFW_KEY_LEFT_ALT)) {

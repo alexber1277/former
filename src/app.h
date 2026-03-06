@@ -22,6 +22,8 @@ class App {
         void Cleared();
         void DrawGrid();
 
+        void CheckSelect();
+
         void DrawPicking();
         void DrawMeshes();
         void DrawHover();

@@ -118,38 +118,47 @@ void Mesh::UploadToGPU() {
     glEnableVertexAttribArray(2);
     // ---- Instance buffer (empty for now) ----
     glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, MaxInstance,nullptr,GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, MaxInstance * sizeof(MeshInstanceGPU),nullptr,GL_DYNAMIC_DRAW);
     // mat4 = 4 vec4
     std::size_t vec4Size = sizeof(glm::vec4);
     for (int i = 0; i < 4; ++i) {
-        glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * vec4Size));
+        glVertexAttribPointer(3 + i,4,GL_FLOAT,GL_FALSE,sizeof(MeshInstanceGPU),(void*)(i * vec4Size));
         glEnableVertexAttribArray(3 + i);
         glVertexAttribDivisor(3 + i, 1);
     }
+
+    // selected instance
+    glVertexAttribPointer(7,1,GL_FLOAT,GL_FALSE,sizeof(MeshInstanceGPU),(void*)offsetof(MeshInstanceGPU, selected));
+    glEnableVertexAttribArray(7);
+    glVertexAttribDivisor(7, 1);
+
     glBindVertexArray(0);
 }
 
 void Mesh::UpdateInstances() {
     if (instances.empty()) { return; }
-    std::vector<glm::mat4> models;
-    models.reserve(instances.size());
-    for (auto& inst : instances) {
-        inst.UpdateModel();
-        models.push_back(inst.model);
+    std::vector<MeshInstanceGPU> models(instances.size());
+    for (size_t i = 0; i < instances.size(); i++) {
+        instances[i].UpdateModel();
+        models[i].model = instances[i].model;
+        models[i].selected = instances[i].selected;
     }
     glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, models.size() * sizeof(glm::mat4), models.data(), GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER,0,models.size() * sizeof(MeshInstanceGPU),models.data());
 }
 
 void Mesh::UpdateInstance(size_t index) {
     if (index >= instances.size()){ return; }
     instances[index].UpdateModel();
+    MeshInstanceGPU instGPU;
+    instGPU.model = instances[index].model;
+    instGPU.selected = instances[index].selected;
     glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
     glBufferSubData(
         GL_ARRAY_BUFFER,
-        index * sizeof(glm::mat4),
-        sizeof(glm::mat4),
-        &instances[index].model
+        index * sizeof(MeshInstanceGPU),
+        sizeof(MeshInstanceGPU),
+        &instGPU
     );
 }
 

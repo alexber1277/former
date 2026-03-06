@@ -246,6 +246,19 @@ void App::CalcFPS() {
     }
 }
 
+void App::CheckSelect() {
+    if (input->ClickLeftMouse()) {
+        if (SelectedMesh != 0) {
+            for (auto& mesh : meshes) {
+                for (auto& inst : mesh.instances) {
+                    inst.selected = 0.0f;
+                }
+            }
+            meshes[SelectedMesh-1].instances[SelectedInstance-1].selected = 1.0f;
+        }
+    }
+}
+
 void App::PreCalculate() {
     CalcFPS();
     std::string title = nameApp + " [BETA][" + fps+ " FPS]";
@@ -318,14 +331,13 @@ int App::StartedRT() {
         glfwPollEvents();
         PreCalculate();
 
-        // 1. MAIN MESH =============================
         DrawMeshes();
 
-        // 2. PICKING ===============================
         DrawPicking();
 
-        // 3. HOVER =================================
         DrawHover();
+
+        CheckSelect();
 
         // ==========================================
         glfwSwapBuffers(window);
