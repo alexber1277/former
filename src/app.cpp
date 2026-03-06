@@ -342,8 +342,7 @@ bool App::DrawGizmo() {
                 ImGuizmo::Manipulate(
                     &camera->view[0][0],
                     &camera->projection[0][0],
-                    ImGuizmo::TRANSLATE,
-                    ImGuizmo::WORLD,
+                    input->operation, ImGuizmo::WORLD,
                     &inst.model[0][0]
                 );
                 if (ImGuizmo::IsUsing()) {
@@ -367,10 +366,8 @@ int App::StartedRT() {
         PreCalculate();
         // ==========================================
 
-        // ==== base show meshes ====
         DrawMeshes();
 
-        // ==== if use imgui gizmo ==
         if (!DrawGizmo()) {
             DrawPicking();
             DrawHover();

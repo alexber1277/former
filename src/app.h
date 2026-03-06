@@ -6,7 +6,6 @@
 #include "../mesh/mesh.h"
 #include "../gui/gui.h"
 #include "../shaders/shader.h"
-#include "ImGuizmo.h"
 
 class App {
     public:

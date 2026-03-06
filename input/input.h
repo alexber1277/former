@@ -1,12 +1,17 @@
 #pragma once
 #include "../gl/glincludes.h"
 #include "../camera/camera.h"
+#include "imgui.h"
+#include "ImGuizmo.h"
 
 class Input {
 public:
     Input(GLFWwindow* window) {
         m_Window = window;
     };
+
+    ImGuizmo::OPERATION operation = ImGuizmo::UNIVERSAL;
+
     void Update();
     void Handlers(Camera* camera);
 

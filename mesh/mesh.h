@@ -85,9 +85,9 @@ struct MeshInstance {
 
     void UpdateModel() {
         glm::mat4 t = glm::translate(glm::mat4(1.0f), position);
-        glm::mat4 rx = glm::rotate(glm::mat4(1.0f), rotation.x, glm::vec3(1,0,0));
-        glm::mat4 ry = glm::rotate(glm::mat4(1.0f), rotation.y, glm::vec3(0,1,0));
-        glm::mat4 rz = glm::rotate(glm::mat4(1.0f), rotation.z, glm::vec3(0,0,1));
+        glm::mat4 rx = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1,0,0));
+        glm::mat4 ry = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0,1,0));
+        glm::mat4 rz = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0,0,1));
         glm::mat4 r = rz * ry * rx;
         glm::mat4 s = glm::scale(glm::mat4(1.0f), scale);
         model = t * r * s;
