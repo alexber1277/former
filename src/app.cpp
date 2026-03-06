@@ -335,6 +335,9 @@ bool App::DrawGizmo() {
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0,0,io.DisplaySize.x,io.DisplaySize.y);
+    if (input->IsKeyDown(GLFW_KEY_W)) operation = ImGuizmo::TRANSLATE;
+    if (input->IsKeyDown(GLFW_KEY_E)) operation = ImGuizmo::ROTATE;
+    if (input->IsKeyDown(GLFW_KEY_R)) operation = ImGuizmo::SCALE;
     for (auto& mesh : meshes) {
         for (size_t i = 0; i < mesh.instances.size(); i++) {
             auto& inst = mesh.instances[i];
@@ -342,7 +345,7 @@ bool App::DrawGizmo() {
                 ImGuizmo::Manipulate(
                     &camera->view[0][0],
                     &camera->projection[0][0],
-                    input->operation, ImGuizmo::WORLD,
+                    operation, ImGuizmo::WORLD,
                     &inst.model[0][0]
                 );
                 if (ImGuizmo::IsUsing()) {

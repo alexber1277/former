@@ -50,8 +50,4 @@ void Input::Handlers(Camera* camera) {
     if (scroll != 0.0f) {
         camera->Zoom(scroll);
     }
-    if (IsMouseDown(GLFW_KEY_W)) operation = ImGuizmo::TRANSLATE;
-    if (IsMouseDown(GLFW_KEY_E)) operation = ImGuizmo::ROTATE;
-    if (IsMouseDown(GLFW_KEY_R)) operation = ImGuizmo::SCALE;
-
 }

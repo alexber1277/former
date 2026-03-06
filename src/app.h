@@ -6,6 +6,7 @@
 #include "../mesh/mesh.h"
 #include "../gui/gui.h"
 #include "../shaders/shader.h"
+#include "ImGuizmo.h"
 
 class App {
     public:
@@ -54,6 +55,8 @@ class App {
         Shader* shader;
 
         std::vector<Mesh> meshes;
+
+        ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
         int ScreenWidth;
         int ScreenHeight;
