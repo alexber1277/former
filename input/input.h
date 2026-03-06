@@ -35,6 +35,8 @@ private:
 
     GLFWwindow* m_Window;
 
+    bool mouseLeftPrev;
+
     double m_MouseX = 0.0;
     double m_MouseY = 0.0;
     double m_LastMouseX = 0.0;

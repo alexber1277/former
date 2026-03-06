@@ -19,6 +19,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+FetchContent_Declare(
+        imguizmo
+        GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+        GIT_TAG master
+)
+
+FetchContent_MakeAvailable(imguizmo)
+
 set(IMGUI_SOURCES
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -43,7 +51,10 @@ set(SOURCES
         shaders/shader.h
 )
 
-list(APPEND SOURCES ${IMGUI_SOURCES})
+list(APPEND SOURCES
+        ${IMGUI_SOURCES}
+        ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -58,11 +69,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
         glm::glm
         assimp::assimp
+
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
+        ${imguizmo_SOURCE_DIR}
 )
 
 add_custom_command(TARGET RTNV POST_BUILD

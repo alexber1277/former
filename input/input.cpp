@@ -32,10 +32,10 @@ bool Input::ClickRightMouse() {
 }
 
 bool Input::ClickLeftMouse() {
-    if (IsMouseDown(GLFW_MOUSE_BUTTON_LEFT)) {
-        return true;
-    }
-    return false;
+    bool current = IsMouseDown(GLFW_MOUSE_BUTTON_LEFT);
+    bool clicked = current && !mouseLeftPrev;
+    mouseLeftPrev = current;
+    return clicked;
 }
 
 void Input::Handlers(Camera* camera) {

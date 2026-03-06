@@ -122,16 +122,14 @@ void Mesh::UploadToGPU() {
     // mat4 = 4 vec4
     std::size_t vec4Size = sizeof(glm::vec4);
     for (int i = 0; i < 4; ++i) {
-        glVertexAttribPointer(3 + i,4,GL_FLOAT,GL_FALSE,sizeof(MeshInstanceGPU),(void*)(i * vec4Size));
+        glVertexAttribPointer(3 + i,4,GL_FLOAT,GL_FALSE,sizeof(MeshInstanceGPU),(void*)(offsetof(MeshInstanceGPU, model) + vec4Size * i));
         glEnableVertexAttribArray(3 + i);
         glVertexAttribDivisor(3 + i, 1);
     }
-
     // selected instance
     glVertexAttribPointer(7,1,GL_FLOAT,GL_FALSE,sizeof(MeshInstanceGPU),(void*)offsetof(MeshInstanceGPU, selected));
     glEnableVertexAttribArray(7);
     glVertexAttribDivisor(7, 1);
-
     glBindVertexArray(0);
 }
 

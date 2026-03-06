@@ -6,6 +6,7 @@
 #include "../mesh/mesh.h"
 #include "../gui/gui.h"
 #include "../shaders/shader.h"
+#include "ImGuizmo.h"
 
 class App {
     public:
@@ -18,11 +19,13 @@ class App {
 
         void CalcFPS();
         void PreCalculate();
+        void PostCalculate();
 
         void Cleared();
         void DrawGrid();
 
         void CheckSelect();
+        bool DrawGizmo();
 
         void DrawPicking();
         void DrawMeshes();

@@ -246,30 +246,6 @@ void App::CalcFPS() {
     }
 }
 
-void App::CheckSelect() {
-    if (input->ClickLeftMouse()) {
-        if (SelectedMesh != 0) {
-            for (auto& mesh : meshes) {
-                for (auto& inst : mesh.instances) {
-                    inst.selected = 0.0f;
-                }
-            }
-            meshes[SelectedMesh-1].instances[SelectedInstance-1].selected = 1.0f;
-        }
-    }
-}
-
-void App::PreCalculate() {
-    CalcFPS();
-    std::string title = nameApp + " [BETA][" + fps+ " FPS]";
-    glfwSetWindowTitle(window, title.c_str());
-    input->Update();
-    input->Handlers(camera);
-    camera->CamCalculated(ScreenWidth,ScreenHeight);
-    Cleared();
-    DrawGrid();
-}
-
 void App::Cleared() {
 
     // clear main buffer
@@ -323,6 +299,65 @@ void App::DrawHover() {
     glCullFace(GL_BACK);
 }
 
+void App::CheckSelect() {
+    if (input->ClickLeftMouse()) {
+        for (auto& mesh : meshes) {
+            for (auto& inst : mesh.instances) {
+                inst.selected = 0.0f;
+            }
+        }
+        if (SelectedMesh != 0) {
+            meshes[SelectedMesh-1].instances[SelectedInstance-1].selected = 1.0f;
+        }
+        for (auto& mesh : meshes) {
+            mesh.UpdateInstances();
+        }
+    }
+}
+
+void App::PostCalculate() {
+    gui->EndFrame();
+}
+
+void App::PreCalculate() {
+    CalcFPS();
+    std::string title = nameApp + " [BETA][" + fps+ " FPS]";
+    glfwSetWindowTitle(window, title.c_str());
+    input->Update();
+    input->Handlers(camera);
+    camera->CamCalculated(ScreenWidth,ScreenHeight);
+    gui->StartFrame();
+    Cleared();
+    DrawGrid();
+}
+
+bool App::DrawGizmo() {
+    ImGuizmo::BeginFrame();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuizmo::SetRect(0,0,io.DisplaySize.x,io.DisplaySize.y);
+    for (auto& mesh : meshes) {
+        for (size_t i = 0; i < mesh.instances.size(); i++) {
+            auto& inst = mesh.instances[i];
+            if (inst.selected >= 1.0f) {
+                ImGuizmo::Manipulate(
+                    &camera->view[0][0],
+                    &camera->projection[0][0],
+                    ImGuizmo::TRANSLATE,
+                    ImGuizmo::WORLD,
+                    &inst.model[0][0]
+                );
+                if (ImGuizmo::IsUsing()) {
+                    float t[3], r[3], s[3];
+                    ImGuizmo::DecomposeMatrixToComponents(&inst.model[0][0], t, r, s);
+                    inst.SetGizmoModel(t,r,s);
+                    mesh.UpdateInstance(i);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 int App::StartedRT() {
     gui->SetPointer(this);
@@ -330,31 +365,22 @@ int App::StartedRT() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
+        // ==========================================
 
+        // ==== base show meshes ====
         DrawMeshes();
 
-        DrawPicking();
-
-        DrawHover();
-
-        CheckSelect();
+        // ==== if use imgui gizmo ==
+        if (!DrawGizmo()) {
+            DrawPicking();
+            DrawHover();
+            CheckSelect();
+        }
 
         // ==========================================
+        PostCalculate();
         glfwSwapBuffers(window);
     }
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

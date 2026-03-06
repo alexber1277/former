@@ -7,10 +7,11 @@ layout(location = 0) out vec4  FragColor;
 
 uniform vec3 cameraPos;
 
-// Материал
 uniform vec4 mat_albedo;
 uniform float mat_metalic;
 uniform float mat_roughness;
+
+in float v_Selected;
 
 void main() {
     vec3 N = normalize(v_Normal);
@@ -27,5 +28,10 @@ void main() {
     vec3 diffuse = diff * mat_albedo.rgb;
 
     vec3 color = ambient + diffuse + spec;
+
+    if (v_Selected > 0.5) {
+        color += vec3(0.2, 0.2, 0.2);
+    }
+
     FragColor = vec4(color, mat_albedo.a);
 }
