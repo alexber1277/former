@@ -313,6 +313,9 @@ void App::CheckSelect() {
             inst.selected = 1.0f;
             gizmoMesh = &mesh;
             gizmoInstance = SelectedInstance-1;
+        } else {
+            gizmoMesh = nullptr;
+            gizmoInstance = 0;
         }
         for (auto& mesh : meshes) {
             mesh.UpdateInstances();
@@ -337,26 +340,35 @@ void App::PreCalculate() {
 }
 
 bool App::DrawGizmo() {
+
     bool statMove = false;
+
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
     if (input->IsKeyDown(GLFW_KEY_W)) operation = ImGuizmo::TRANSLATE;
     if (input->IsKeyDown(GLFW_KEY_E)) operation = ImGuizmo::ROTATE;
     if (input->IsKeyDown(GLFW_KEY_R)) operation = ImGuizmo::SCALE;
-    float snapTranslate[3] = {0.01f, 0.01f, 0.01f};
-    float snapScale[3] = {0.01f, 0.01f, 0.01f};
+
+    float snapTranslate[3] = {0.01f,0.01f,0.01f};
+    float snapScale[3] = {0.01f,0.01f,0.01f};
     float snapRotate = 5.0f;
+
     float* snapPtr = nullptr;
+
     if (operation == ImGuizmo::TRANSLATE) snapPtr = snapTranslate;
     if (operation == ImGuizmo::ROTATE)    snapPtr = &snapRotate;
     if (operation == ImGuizmo::SCALE)     snapPtr = snapScale;
+
     if (!gizmoMesh) return false;
     if (gizmoInstance < 0) return false;
     if (gizmoInstance >= gizmoMesh->instances.size()) return false;
     if (gizmoMesh->instances[gizmoInstance].selected < 1.0f) return false;
+
     glm::mat4 gizmoMatrix = gizmoMesh->instances[gizmoInstance].model;
     glm::mat4 oldMatrix = gizmoMatrix;
+
     ImGuizmo::Manipulate(
         &camera->view[0][0],
         &camera->projection[0][0],
@@ -366,7 +378,33 @@ bool App::DrawGizmo() {
         nullptr,
         snapPtr
     );
+
+    static bool duplicated = false;
+
     if (ImGuizmo::IsUsing()) {
+        if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT) && !duplicated) {
+            std::vector<std::pair<Mesh*,int>> newInstances;
+            for (auto& mesh : meshes) {
+                size_t count = mesh.instances.size();
+                for (size_t i = 0; i < count; i++) {
+                    auto& inst = mesh.instances[i];
+                    if (inst.selected >= 1.0f) {
+                        MeshInstance copy = inst;
+                        copy.selected = 1.0f;
+                        mesh.instances.push_back(copy);
+                        int newIndex = (int)mesh.instances.size() - 1;
+                        newInstances.push_back({&mesh,newIndex});
+                    }
+                    inst.selected = 0.0f;
+                }
+                mesh.UpdateInstances();
+            }
+            if (!newInstances.empty()) {
+                gizmoMesh = newInstances[0].first;
+                gizmoInstance = newInstances[0].second;
+            }
+            duplicated = true;
+        }
         glm::mat4 delta = gizmoMatrix * glm::inverse(oldMatrix);
         for (auto& mesh : meshes) {
             for (size_t i = 0; i < mesh.instances.size(); i++) {
@@ -376,14 +414,16 @@ bool App::DrawGizmo() {
                     float t[3], r[3], s[3];
                     ImGuizmo::DecomposeMatrixToComponents(
                         &inst.model[0][0],
-                        t, r, s
+                        t,r,s
                     );
-                    inst.SetGizmoModel(t, r, s);
+                    inst.SetGizmoModel(t,r,s);
                     mesh.UpdateInstance(i);
                 }
             }
         }
         statMove = true;
+    } else {
+        duplicated = false;
     }
     return statMove;
 }
