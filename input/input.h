@@ -15,6 +15,7 @@ public:
     double GetMouseY() const;
     double GetDeltaX() const;
     double GetDeltaY() const;
+    bool IsPressCtrl();
     bool ClickLeftMouse();
     bool ClickRightMouse();
     double GetScrollDelta() const;

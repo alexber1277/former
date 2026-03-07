@@ -38,6 +38,10 @@ bool Input::ClickLeftMouse() {
     return clicked;
 }
 
+bool Input::IsPressCtrl() {
+    return IsKeyDown(GLFW_KEY_LEFT_CONTROL);
+}
+
 void Input::Handlers(Camera* camera) {
     if (IsMouseDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         if (IsKeyDown(GLFW_KEY_LEFT_ALT)) {

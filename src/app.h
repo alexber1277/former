@@ -70,4 +70,7 @@ class App {
 
         double lastTitleUpdate = 0;
 
+        Mesh* gizmoMesh;
+        int gizmoInstance;
+
 };

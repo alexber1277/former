@@ -298,16 +298,21 @@ void App::DrawHover() {
     meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1, shader->SelectShader, shader->SelectCameraProjection, camera);
     glCullFace(GL_BACK);
 }
-
 void App::CheckSelect() {
     if (input->ClickLeftMouse()) {
-        for (auto& mesh : meshes) {
-            for (auto& inst : mesh.instances) {
-                inst.selected = 0.0f;
+        if (!input->IsPressCtrl()) {
+            for (auto& mesh : meshes) {
+                for (auto& inst : mesh.instances) {
+                    inst.selected = 0.0f;
+                }
             }
         }
         if (SelectedMesh != 0) {
-            meshes[SelectedMesh-1].instances[SelectedInstance-1].selected = 1.0f;
+            Mesh& mesh = meshes[SelectedMesh-1];
+            auto& inst = mesh.instances[SelectedInstance-1];
+            inst.selected = 1.0f;
+            gizmoMesh = &mesh;
+            gizmoInstance = SelectedInstance-1;
         }
         for (auto& mesh : meshes) {
             mesh.UpdateInstances();
@@ -332,33 +337,55 @@ void App::PreCalculate() {
 }
 
 bool App::DrawGizmo() {
+    bool statMove = false;
     ImGuizmo::BeginFrame();
     ImGuiIO& io = ImGui::GetIO();
-    ImGuizmo::SetRect(0,0,io.DisplaySize.x,io.DisplaySize.y);
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
     if (input->IsKeyDown(GLFW_KEY_W)) operation = ImGuizmo::TRANSLATE;
     if (input->IsKeyDown(GLFW_KEY_E)) operation = ImGuizmo::ROTATE;
     if (input->IsKeyDown(GLFW_KEY_R)) operation = ImGuizmo::SCALE;
-    for (auto& mesh : meshes) {
-        for (size_t i = 0; i < mesh.instances.size(); i++) {
-            auto& inst = mesh.instances[i];
-            if (inst.selected >= 1.0f) {
-                ImGuizmo::Manipulate(
-                    &camera->view[0][0],
-                    &camera->projection[0][0],
-                    operation, ImGuizmo::WORLD,
-                    &inst.model[0][0]
-                );
-                if (ImGuizmo::IsUsing()) {
+    float snapTranslate[3] = {0.01f, 0.01f, 0.01f};
+    float snapScale[3] = {0.01f, 0.01f, 0.01f};
+    float snapRotate = 5.0f;
+    float* snapPtr = nullptr;
+    if (operation == ImGuizmo::TRANSLATE) snapPtr = snapTranslate;
+    if (operation == ImGuizmo::ROTATE)    snapPtr = &snapRotate;
+    if (operation == ImGuizmo::SCALE)     snapPtr = snapScale;
+    if (!gizmoMesh) return false;
+    if (gizmoInstance < 0) return false;
+    if (gizmoInstance >= gizmoMesh->instances.size()) return false;
+    if (gizmoMesh->instances[gizmoInstance].selected < 1.0f) return false;
+    glm::mat4 gizmoMatrix = gizmoMesh->instances[gizmoInstance].model;
+    glm::mat4 oldMatrix = gizmoMatrix;
+    ImGuizmo::Manipulate(
+        &camera->view[0][0],
+        &camera->projection[0][0],
+        operation,
+        ImGuizmo::WORLD,
+        &gizmoMatrix[0][0],
+        nullptr,
+        snapPtr
+    );
+    if (ImGuizmo::IsUsing()) {
+        glm::mat4 delta = gizmoMatrix * glm::inverse(oldMatrix);
+        for (auto& mesh : meshes) {
+            for (size_t i = 0; i < mesh.instances.size(); i++) {
+                auto& inst = mesh.instances[i];
+                if (inst.selected >= 1.0f) {
+                    inst.model = delta * inst.model;
                     float t[3], r[3], s[3];
-                    ImGuizmo::DecomposeMatrixToComponents(&inst.model[0][0], t, r, s);
-                    inst.SetGizmoModel(t,r,s);
+                    ImGuizmo::DecomposeMatrixToComponents(
+                        &inst.model[0][0],
+                        t, r, s
+                    );
+                    inst.SetGizmoModel(t, r, s);
                     mesh.UpdateInstance(i);
-                    return true;
                 }
             }
         }
+        statMove = true;
     }
-    return false;
+    return statMove;
 }
 
 int App::StartedRT() {
