@@ -430,6 +430,22 @@ void App::CheckSelect() {
     }
 }
 
+void App::DeleteSelected() {
+    if (!input->IsKeyDown(GLFW_KEY_DELETE)) {
+        return;
+    }
+    gizmoMesh = nullptr;
+    gizmoInstance = -1;
+    for (auto& mesh : meshes) {
+        for (int i = (int)mesh.instances.size() - 1; i >= 0; i--) {
+            if (mesh.instances[i].selected >= 1.0f) {
+                mesh.instances.erase(mesh.instances.begin() + i);
+            }
+        }
+        mesh.UpdateInstances();
+    }
+}
+
 int App::StartedRT() {
     gui->SetPointer(this);
     glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
@@ -453,20 +469,4 @@ int App::StartedRT() {
     }
 
     return 0;
-}
-
-void App::DeleteSelected() {
-    if (!input->IsKeyDown(GLFW_KEY_DELETE)) {
-        return;
-    }
-    gizmoMesh = nullptr;
-    gizmoInstance = -1;
-    for (auto& mesh : meshes) {
-        for (int i = (int)mesh.instances.size() - 1; i >= 0; i--) {
-            if (mesh.instances[i].selected >= 1.0f) {
-                mesh.instances.erase(mesh.instances.begin() + i);
-            }
-        }
-        mesh.UpdateInstances();
-    }
 }
