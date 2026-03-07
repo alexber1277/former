@@ -224,12 +224,10 @@ void App::LoadShaders() {
 }
 
 void App::LoadMeshes() {
-    meshes = Mesh::LoadMeshes("assets/cube.obj");
+    meshes = Mesh::LoadMeshes("assets/floore.obj");
     for (auto& mesh : meshes) {
         mesh.SetCamPos(shader->MeshShader);
         mesh.AttachMaterial(shader->MeshShader);
-        mesh.AddInstance(glm::vec3(-4, -4, 3));
-        mesh.AddInstance(glm::vec3(-8, -8, 6));
         mesh.UpdateInstances();
     }
 }
@@ -446,6 +444,7 @@ int App::StartedRT() {
             DrawPicking();
             DrawHover();
             CheckSelect();
+            DeleteSelected();
         }
 
         // ==========================================
@@ -454,4 +453,20 @@ int App::StartedRT() {
     }
 
     return 0;
+}
+
+void App::DeleteSelected() {
+    if (!input->IsKeyDown(GLFW_KEY_DELETE)) {
+        return;
+    }
+    gizmoMesh = nullptr;
+    gizmoInstance = -1;
+    for (auto& mesh : meshes) {
+        for (int i = (int)mesh.instances.size() - 1; i >= 0; i--) {
+            if (mesh.instances[i].selected >= 1.0f) {
+                mesh.instances.erase(mesh.instances.begin() + i);
+            }
+        }
+        mesh.UpdateInstances();
+    }
 }

@@ -31,6 +31,8 @@ class App {
         void DrawMeshes();
         void DrawHover();
 
+        void DeleteSelected();
+
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);
 
