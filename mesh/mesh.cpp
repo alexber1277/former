@@ -80,6 +80,8 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
         instance.scale    = glm::vec3(1.0f);
         instance.selected = 0.0f;
         mesh.instances.push_back(instance);
+        mesh.name = aMesh->mName.C_Str();
+        mirror.name = mesh.name + "_mirror";
         mesh.UploadToGPU();
         mirror.UploadToGPU();
         mesh.UpdateInstances();

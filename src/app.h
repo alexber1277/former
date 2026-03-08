@@ -32,8 +32,9 @@ class App {
         void DrawHover();
         void MirrorSelect();
         void FocusSelected();
-
         void DeleteSelected();
+
+        std::vector<Mesh>& GetMeshes();
 
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);

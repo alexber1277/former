@@ -411,9 +411,9 @@ void App::CheckSelect() {
     if (SelectedMesh <= 0 || SelectedInstance <= 0) {
         gizmoMesh = nullptr;
         gizmoInstance = -1;
-        for (auto& mesh : meshes)
+        for (auto& mesh : meshes) {
             mesh.UpdateInstances();
-
+        }
         return;
     }
     int meshIndex = SelectedMesh - 1;
@@ -447,6 +447,10 @@ void App::DeleteSelected() {
         }
         mesh.UpdateInstances();
     }
+}
+
+std::vector<Mesh>& App::GetMeshes() {
+    return meshes;
 }
 
 void App::MirrorSelect() {
@@ -536,6 +540,8 @@ int App::StartedRT() {
             MirrorSelect();
             FocusSelected();
         }
+
+        gui->RenderPanels();
 
         // ==========================================
         PostCalculate();

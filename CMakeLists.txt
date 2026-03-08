@@ -90,6 +90,12 @@ add_custom_command(TARGET RTNV POST_BUILD
         $<TARGET_FILE_DIR:RTNV>/assets
 )
 
+add_custom_command(TARGET RTNV POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/fonts
+        $<TARGET_FILE_DIR:RTNV>/fonts
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${GLEW_INCLUDE_DIRS}
         ${GLFW_INCLUDE_DIRS}

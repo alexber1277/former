@@ -13,6 +13,7 @@ class Mesh {
 
         // original ID
         uint32_t ID;
+        std::string name;
 
         // mirror ID
         uint32_t mirrorID;
