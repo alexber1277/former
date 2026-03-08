@@ -14,6 +14,9 @@ class Mesh {
         // original ID
         uint32_t ID;
 
+        // mirror ID
+        uint32_t mirrorID;
+
         // loc material
         GLuint MatAlbedo;
         GLuint MatRoughnes;

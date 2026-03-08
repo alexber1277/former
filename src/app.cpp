@@ -273,6 +273,7 @@ void App::DrawPicking() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glUseProgram(shader->PickShader);
     for (auto& mesh : meshes) {
         glUniform1ui(shader->PickMeshIDProjection, mesh.ID);
         mesh.Draw(shader->PickShader, shader->PickCameraProjection, camera);
@@ -295,6 +296,7 @@ void App::DrawHover() {
     glUseProgram(shader->SelectShader);
     meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1, shader->SelectShader, shader->SelectCameraProjection, camera);
     glCullFace(GL_BACK);
+    //Log(std::to_string(SelectedMesh) + " - " + std::to_string(SelectedInstance));
 }
 
 void App::PostCalculate() {
