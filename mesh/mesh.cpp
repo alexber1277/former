@@ -4,10 +4,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-std::vector<Mesh> Mesh::LoadMeshes(const std::string& path)
-{
+std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
     std::vector<Mesh> objects;
-
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,
@@ -15,120 +13,79 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path)
         aiProcess_JoinIdenticalVertices |
         aiProcess_GlobalScale
     );
-
     if (!scene || !scene->HasMeshes())
         return objects;
-
     objects.reserve(scene->mNumMeshes * 2);
-
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-    {
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* aMesh = scene->mMeshes[i];
-
         Mesh mesh;
         Mesh mirror;
-
         uint32_t baseID = objects.size();
-
         mesh.ID = baseID;
         mirror.ID = baseID + 1;
-
         mesh.mirrorID = mirror.ID;
         mirror.mirrorID = mesh.ID;
-
         mesh.vertices.reserve(aMesh->mNumVertices);
         mirror.vertices.reserve(aMesh->mNumVertices);
-
         for (unsigned int v = 0; v < aMesh->mNumVertices; ++v) {
             MeshVertex vertex;
-
             vertex.position = glm::vec3(
                 aMesh->mVertices[v].x,
                 aMesh->mVertices[v].y,
                 aMesh->mVertices[v].z
             );
-
-            if (aMesh->HasNormals())
-            {
+            if (aMesh->HasNormals()) {
                 vertex.normal = glm::vec3(
                     aMesh->mNormals[v].x,
                     aMesh->mNormals[v].y,
                     aMesh->mNormals[v].z
                 );
-            }
-            else
-            {
+            } else {
                 vertex.normal = glm::vec3(0.0f);
             }
-
-            if (aMesh->HasTextureCoords(0))
-            {
+            if (aMesh->HasTextureCoords(0)) {
                 vertex.uv = glm::vec2(
                     aMesh->mTextureCoords[0][v].x,
                     aMesh->mTextureCoords[0][v].y
                 );
-            }
-            else
-            {
+            } else {
                 vertex.uv = glm::vec2(0.0f);
             }
-
             mesh.vertices.push_back(vertex);
-
             MeshVertex mvertex = vertex;
             mvertex.position.x = -mvertex.position.x;
             mvertex.normal.x   = -mvertex.normal.x;
-
             mirror.vertices.push_back(mvertex);
         }
-
         mesh.indices.reserve(aMesh->mNumFaces);
         mirror.indices.reserve(aMesh->mNumFaces);
-
-        for (unsigned int f = 0; f < aMesh->mNumFaces; ++f)
-        {
+        for (unsigned int f = 0; f < aMesh->mNumFaces; ++f) {
             const aiFace& face = aMesh->mFaces[f];
             if (face.mNumIndices != 3) continue;
-
             MeshIndex idx;
             idx.i1 = face.mIndices[0];
             idx.i2 = face.mIndices[1];
             idx.i3 = face.mIndices[2];
-
             mesh.indices.push_back(idx);
-
             MeshIndex midx;
             midx.i1 = face.mIndices[0];
             midx.i2 = face.mIndices[2];
             midx.i3 = face.mIndices[1];
-
             mirror.indices.push_back(midx);
         }
-
         MeshInstance instance;
         instance.meshId = mesh.ID;
         instance.position = glm::vec3(0.0f);
         instance.rotation = glm::vec3(0.0f);
         instance.scale    = glm::vec3(0.1f);
         instance.selected = 0.0f;
-
         mesh.instances.push_back(instance);
-
-        MeshInstance mirrorInstance = instance;
-        mirrorInstance.meshId = mirror.ID;
-
-        mirror.instances.push_back(mirrorInstance);
-
         mesh.UploadToGPU();
         mirror.UploadToGPU();
-
         mesh.UpdateInstances();
-        mirror.UpdateInstances();
-
         objects.push_back(mesh);
         objects.push_back(mirror);
     }
-
     return objects;
 }
 

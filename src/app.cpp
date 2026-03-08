@@ -501,7 +501,7 @@ void App::FocusSelected() {
     glm::vec3 offset = camera->position - camera->target;
     float oldDistance = glm::length(offset);
     if (oldDistance < 0.001f)
-        offset = glm::vec3(0.0f, 0.0f, -1.0f) * 5.0f; // дефолтное смещение
+        offset = glm::vec3(0.0f, 0.0f, -1.0f) * 5.0f;
     else
         offset = glm::normalize(offset) * oldDistance;
     camera->target = center;
@@ -510,7 +510,7 @@ void App::FocusSelected() {
     float radius = glm::length(size) * 0.5f;
     if (radius > 0.001f) {
         float distance = radius / tan(glm::radians(camera->fov * 0.5f));
-        distance = glm::max(distance, 0.1f); // чтобы не отрицалось
+        distance = glm::max(distance, 0.1f);
         camera->position = center + glm::normalize(offset) * distance;
     }
     zPressedLastFrame = zPressedNow;
