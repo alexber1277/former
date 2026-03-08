@@ -224,11 +224,13 @@ void App::LoadShaders() {
 }
 
 void App::LoadMeshes() {
-    meshes = Mesh::LoadMeshes("assets/floore.obj");
-    for (auto& mesh : meshes) {
-        mesh.SetCamPos(shader->MeshShader);
-        mesh.AttachMaterial(shader->MeshShader);
-        mesh.UpdateInstances();
+    auto newMeshes = Mesh::LoadMeshes("assets/floore.obj");
+    size_t baseIndex = meshes.size();
+    meshes.insert(meshes.end(), newMeshes.begin(), newMeshes.end());
+    for (size_t i = baseIndex; i < meshes.size(); ++i) {
+        meshes[i].SetCamPos(shader->MeshShader);
+        meshes[i].AttachMaterial(shader->MeshShader);
+        meshes[i].UpdateInstances();
     }
 }
 

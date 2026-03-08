@@ -3,7 +3,7 @@
 
 class Camera {
 public:
-    glm::vec3 position = {-50.0f, -50.0f, 50.0f};
+    glm::vec3 position = {-130.0f, -130.0f, 90.0f};
     glm::vec3 target   = {0.0f, 0.0f, 0.0f};
     glm::vec3 up       = {0.0f, 0.0f, 1.0f};
 

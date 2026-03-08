@@ -34,6 +34,7 @@ public:
     GLuint GridModel = 0;
     GLuint GridCameraProjection = 0;
     int GridHalf = 10;
+    float CellSize = 5.0f;
     std::vector<glm::vec3> GridVertices;
     glm::mat4 GridDefault = glm::mat4(1.0f);
 
@@ -78,10 +79,11 @@ public:
     void GenGridVerticles() {
         GridVertices.clear();
         for (int i = -GridHalf; i <= GridHalf; ++i) {
-            GridVertices.push_back({ (float)i, -GridHalf, 0.0f });
-            GridVertices.push_back({ (float)i,  GridHalf, 0.0f });
-            GridVertices.push_back({ -GridHalf, (float)i, 0.0f });
-            GridVertices.push_back({  GridHalf, (float)i, 0.0f });
+            float offset = i * CellSize;
+            GridVertices.push_back({ offset, -GridHalf * CellSize, 0.0f });
+            GridVertices.push_back({ offset,  GridHalf * CellSize, 0.0f });
+            GridVertices.push_back({ -GridHalf * CellSize, offset, 0.0f });
+            GridVertices.push_back({  GridHalf * CellSize, offset, 0.0f });
         }
     }
 

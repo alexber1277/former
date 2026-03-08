@@ -77,7 +77,7 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
         instance.meshId = mesh.ID;
         instance.position = glm::vec3(0.0f);
         instance.rotation = glm::vec3(0.0f);
-        instance.scale    = glm::vec3(0.1f);
+        instance.scale    = glm::vec3(1.0f);
         instance.selected = 0.0f;
         mesh.instances.push_back(instance);
         mesh.UploadToGPU();
