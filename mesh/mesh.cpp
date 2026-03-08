@@ -137,9 +137,7 @@ void Mesh::SetCamPos(GLuint shader) {
 }
 
 void Mesh::DrawInstance(int instanceIndex, GLuint shader, GLint viewProjLoc, Camera* camera) {
-    if (instanceIndex < 0 || instanceIndex >= instances.size()) {
-        return;
-    }
+    if (instanceIndex < 0 || instanceIndex >= instances.size()) return;
     glUseProgram(shader);
     glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, &camera->viewProjection[0][0]);
     glUniform3fv(CameraPos, 1, glm::value_ptr(camera->position));
@@ -149,7 +147,7 @@ void Mesh::DrawInstance(int instanceIndex, GLuint shader, GLint viewProjLoc, Cam
     GLint instanceIndexLoc = glGetUniformLocation(shader, "instanceIndex");
     glUniform1i(instanceIndexLoc, instanceIndex);
     glBindVertexArray(VAO);
-    glDrawElementsInstanced(GL_TRIANGLES, indices.size() * 3, GL_UNSIGNED_INT, 0, 1);
+    glDrawElementsInstancedBaseInstance(GL_TRIANGLES,indices.size() * 3,GL_UNSIGNED_INT,0,1,instanceIndex);
     glBindVertexArray(0);
 }
 
