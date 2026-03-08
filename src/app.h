@@ -30,6 +30,7 @@ class App {
         void DrawPicking();
         void DrawMeshes();
         void DrawHover();
+        void MirrorSelect();
 
         void DeleteSelected();
 

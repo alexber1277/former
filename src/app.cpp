@@ -448,6 +448,34 @@ void App::DeleteSelected() {
     }
 }
 
+void App::MirrorSelect() {
+    static bool mHeld = false;
+    bool pressed = input->IsKeyDown(GLFW_KEY_M);
+    if (!pressed) {
+        mHeld = false;
+        return;
+    }
+    if (mHeld) return;
+    mHeld = true;
+    for (size_t m = 0; m < meshes.size(); ++m) {
+        Mesh& srcMesh = meshes[m];
+        Mesh& dstMesh = meshes[srcMesh.mirrorID];
+        for (int i = (int)srcMesh.instances.size() - 1; i >= 0; --i) {
+            MeshInstance& inst = srcMesh.instances[i];
+            if (inst.selected > 0.5f) {
+                MeshInstance moved = inst;
+                moved.meshId = dstMesh.ID;
+                moved.selected = 0.0f;
+                dstMesh.instances.push_back(moved);
+                srcMesh.instances.erase(srcMesh.instances.begin() + i);
+            }
+        }
+    }
+    for (auto& mesh : meshes) {
+        mesh.UpdateInstances();
+    }
+}
+
 int App::StartedRT() {
     gui->SetPointer(this);
     glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
@@ -463,6 +491,7 @@ int App::StartedRT() {
             DrawHover();
             CheckSelect();
             DeleteSelected();
+            MirrorSelect();
         }
 
         // ==========================================
