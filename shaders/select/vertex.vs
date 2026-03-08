@@ -6,13 +6,10 @@ layout(location = 3) in mat4 a_Model;
 
 uniform mat4 viewProjection;
 uniform int instanceIndex;
-flat out uint v_InstanceID;
 
-const float outlineThickness = 1.5;
+flat out uint v_InstanceID;
 
 void main() {
     v_InstanceID = gl_InstanceID;
-    vec3 normalApprox = normalize(a_Normal);
-    vec3 inflatedPos = a_Position + normalApprox * outlineThickness;
-    gl_Position = viewProjection * a_Model * vec4(inflatedPos, 1.0);
+    gl_Position = viewProjection * a_Model * vec4(a_Position, 1.0);
 }

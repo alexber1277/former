@@ -286,17 +286,16 @@ void App::DrawPicking() {
 }
 
 void App::DrawHover() {
-    if (SelectedMesh == 0 || SelectedInstance == 0) {
+    if (SelectedMesh == 0 || SelectedInstance == 0)
         return;
-    }
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
     glViewport(0, 0, ScreenWidth, ScreenHeight);
-    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
     glUseProgram(shader->SelectShader);
-    meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1, shader->SelectShader, shader->SelectCameraProjection, camera);
-    glCullFace(GL_BACK);
-    //Log(std::to_string(SelectedMesh) + " - " + std::to_string(SelectedInstance));
+    meshes[SelectedMesh - 1].DrawInstance(SelectedInstance - 1,shader->SelectShader,shader->SelectCameraProjection,camera);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_BLEND);
 }
 
 void App::PostCalculate() {
@@ -501,3 +500,10 @@ int App::StartedRT() {
 
     return 0;
 }
+
+
+
+
+
+
+

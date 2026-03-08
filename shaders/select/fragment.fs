@@ -9,8 +9,8 @@ void main() {
     if(v_InstanceID != uint(instanceIndex))
         discard;
 
-    if(gl_FrontFacing)
-        discard;
-
-    FragColor = vec4(1.0, 0.6, 0.0, 1.0);
+    vec3 color = vec3(1.0, 1.0, 1.0);
+    color *= 0.1;
+    color = min(color, 1.0);
+    FragColor = vec4(color, 1.0);
 }
