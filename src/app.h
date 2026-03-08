@@ -31,6 +31,7 @@ class App {
         void DrawMeshes();
         void DrawHover();
         void MirrorSelect();
+        void FocusSelected();
 
         void DeleteSelected();
 
