@@ -63,6 +63,8 @@ App::App(std::string name) {
     input = new Input(window);
     gui = new Gui(window);
     shader = new Shader();
+    library = new Library();
+    library->InitPreviewBuffer();
 
     BaseCallback();
 
@@ -216,15 +218,18 @@ void App::LoadShaders() {
     if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
     if (!LoadShaderItem("pick",shader->PickShader)) { LogErr("Failed to load pick shader"); }
     if (!LoadShaderItem("select",shader->SelectShader)) { LogErr("Failed to load select shader"); }
+    if (!LoadShaderItem("preview",shader->SelectShader)) { LogErr("Failed to load select shader"); }
+    if (!LoadShaderItem("preview",shader->PreviewShader)) { LogErr("Failed to load preview shader"); }
     shader->InitializeUniformsGrid();
     shader->InitializeUniformsMesh();
     shader->InitializeUniformsPick();
     shader->InitializeUniformsSelect();
     shader->CreatePickingFramebuffer(ScreenWidth, ScreenHeight);
+    library->PreviewShader = shader->MeshShader;
 }
 
 void App::LoadMeshes() {
-    auto newMeshes = Mesh::LoadMeshes("assets/floore.obj");
+    auto newMeshes = Mesh::LoadMeshes("assets/floore.obj", meshes.size());
     size_t baseIndex = meshes.size();
     meshes.insert(meshes.end(), newMeshes.begin(), newMeshes.end());
     for (size_t i = baseIndex; i < meshes.size(); ++i) {
@@ -232,6 +237,18 @@ void App::LoadMeshes() {
         meshes[i].AttachMaterial(shader->MeshShader);
         meshes[i].UpdateInstances();
     }
+}
+
+void App::LoadMeshAsset(const std::string& path) {
+    auto newMeshes = Mesh::LoadMeshes(path, meshes.size());
+    size_t baseIndex = meshes.size();
+    meshes.insert(meshes.end(), newMeshes.begin(), newMeshes.end());
+    for (size_t i = baseIndex; i < meshes.size(); ++i) {
+        meshes[i].SetCamPos(shader->MeshShader);
+        meshes[i].AttachMaterial(shader->MeshShader);
+        meshes[i].UpdateInstances();
+    }
+    //printf("meshes: %zu\n", meshes.size());
 }
 
 void App::CalcFPS() {
@@ -447,6 +464,13 @@ void App::DeleteSelected() {
         }
         mesh.UpdateInstances();
     }
+}
+
+void App::FormedLibrary() {
+    library->LoadElementsLib();
+    meshes.clear();
+    meshes.shrink_to_fit();
+    gui->Assets = library->assets;
 }
 
 std::vector<Mesh>& App::GetMeshes() {

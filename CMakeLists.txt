@@ -49,6 +49,10 @@ set(SOURCES
         mesh/mesh.cpp
         mesh/mesh.h
         shaders/shader.h
+        library/library.cpp
+        library/library.h
+        gl/stb.cpp
+        gl/stb_image.h
 )
 
 list(APPEND SOURCES

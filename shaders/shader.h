@@ -42,6 +42,9 @@ public:
     GLuint MeshShader = 0;
     GLuint MeshCameraProjection = 0;
 
+    // PREVIEW ======================================
+    GLuint PreviewShader = 0;
+
     // Grid ========================================================================
     void InitializeUniformsGrid() {
         GenGridVerticles();

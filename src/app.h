@@ -6,6 +6,7 @@
 #include "../mesh/mesh.h"
 #include "../gui/gui.h"
 #include "../shaders/shader.h"
+#include "../library/library.h"
 #include "ImGuizmo.h"
 
 class App {
@@ -14,6 +15,7 @@ class App {
 
         int StartedRT();
         void BaseCallback();
+        void LoadMeshAsset(const std::string& path);
         void LoadMeshes();
         void LoadShaders();
 
@@ -33,6 +35,8 @@ class App {
         void MirrorSelect();
         void FocusSelected();
         void DeleteSelected();
+
+        void FormedLibrary();
 
         std::vector<Mesh>& GetMeshes();
 
@@ -58,6 +62,7 @@ class App {
         Input* input;
         Gui* gui;
         Shader* shader;
+        Library* library;
 
         std::vector<Mesh> meshes;
 

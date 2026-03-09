@@ -4,7 +4,7 @@ int main() {
 
     App* app = new App("RTNV");
     app->LoadShaders();
-    app->LoadMeshes();
+    app->FormedLibrary();
     return app->StartedRT();
 
 }

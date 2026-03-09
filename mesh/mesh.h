@@ -43,7 +43,7 @@ class Mesh {
         GLsizei MaxInstance = 100;
 
         // load mesh default
-        static std::vector<Mesh> LoadMeshes(const std::string& path);
+        static std::vector<Mesh> LoadMeshes(const std::string& path, int sizeMesh);
 
         // mesh data
         std::vector<MeshVertex> vertices;

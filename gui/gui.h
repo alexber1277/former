@@ -1,8 +1,10 @@
 #pragma once
 #include "../gl/glincludes.h"
 #include <imgui.h>
+#include <vector>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "../library/library.h"
 
 class App;
 
@@ -25,9 +27,14 @@ class Gui {
         void EndFrame();
         void Explorer();
         void RenderPanels();
+        void AssetsList();
         void SetPointer(App* appTs) {
             app = appTs;
         };
+
+        float iconSize = 60;
+
+        std::vector<LibraryAsset> Assets;
 
     private:
         GLFWwindow* m_Window;

@@ -4,7 +4,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
+std::vector<Mesh> Mesh::LoadMeshes(const std::string& path, int sizeMesh) {
     std::vector<Mesh> objects;
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
@@ -20,7 +20,7 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
         const aiMesh* aMesh = scene->mMeshes[i];
         Mesh mesh;
         Mesh mirror;
-        uint32_t baseID = objects.size();
+        uint32_t baseID = sizeMesh;
         mesh.ID = baseID;
         mirror.ID = baseID + 1;
         mesh.mirrorID = mirror.ID;
@@ -87,6 +87,7 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path) {
         mesh.UpdateInstances();
         objects.push_back(mesh);
         objects.push_back(mirror);
+        sizeMesh += 2;
     }
     return objects;
 }
