@@ -218,8 +218,6 @@ void App::LoadShaders() {
     if (!LoadShaderItem("mesh",shader->MeshShader)) { LogErr("Failed to load mesh shader"); }
     if (!LoadShaderItem("pick",shader->PickShader)) { LogErr("Failed to load pick shader"); }
     if (!LoadShaderItem("select",shader->SelectShader)) { LogErr("Failed to load select shader"); }
-    if (!LoadShaderItem("preview",shader->SelectShader)) { LogErr("Failed to load select shader"); }
-    if (!LoadShaderItem("preview",shader->PreviewShader)) { LogErr("Failed to load preview shader"); }
     shader->InitializeUniformsGrid();
     shader->InitializeUniformsMesh();
     shader->InitializeUniformsPick();
@@ -569,8 +567,3 @@ int App::StartedRT() {
 
     return 0;
 }
-
-
-
-
-
