@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include <filesystem>
+
 #include "../src/app.h"
 
 void Gui::StartFrame() {
@@ -15,14 +17,13 @@ void Gui::EndFrame() {
 
 void Gui::RenderPanels() {
     AssetsList();
-    Explorer();
 }
 
 void Gui::AssetsList() {
     ImGuiIO& io = ImGui::GetIO();
     float height = 200.0f;
-    ImGui::SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y - height),ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height),ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y - height), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height), ImGuiCond_Always);
     ImGui::Begin("assets", nullptr, baseFlags);
     float padding  = 10.0f;
     float cellSize = iconSize + padding;
@@ -30,22 +31,28 @@ void Gui::AssetsList() {
     int columns = (int)(panelWidth / cellSize);
     if (columns < 1) columns = 1;
     ImGui::Columns(columns, 0, false);
+    const int maxNameLen = 8;
     for (size_t i = 0; i < Assets.size(); i++) {
         auto& asset = Assets[i];
         ImGui::PushID((int)i);
-        ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex,ImVec2(iconSize, iconSize));
+        ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex, ImVec2(iconSize, iconSize));
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-            app->LoadMeshAsset(Assets[i].path);
+            app->LoadMeshAsset(asset.path);
         }
-        if (ImGui::IsItemHovered()){
+        if (ImGui::IsItemHovered()) {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
             ImGui::BeginTooltip();
             float previewSize = 300.0f;
-            ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex,ImVec2(previewSize, previewSize));
-            ImGui::Text("%s", asset.name.c_str());
+            ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex, ImVec2(previewSize, previewSize));
+            std::string tooltipName = std::filesystem::path(asset.name).filename().string();
+            ImGui::Text("%s", tooltipName.c_str());
             ImGui::EndTooltip();
         }
-        ImGui::TextWrapped("%s", asset.name.c_str());
+        std::string displayName = std::filesystem::path(asset.name).filename().string();
+        if (displayName.length() > maxNameLen) {
+            displayName = displayName.substr(0, maxNameLen - 3) + "...";
+        }
+        ImGui::TextWrapped("%s", displayName.c_str());
         ImGui::NextColumn();
         ImGui::PopID();
     }
@@ -59,11 +66,8 @@ void Gui::Explorer() {
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - width, 0));
     ImGui::SetNextWindowSize(ImVec2(width, io.DisplaySize.y));
     ImGui::Begin("explorer", nullptr, baseFlags);
-
     ImGui::Text("EXPLORER");
     ImGui::Separator();
-
-    // list meshes =============
     auto& meshes = app->GetMeshes();
     for (size_t m = 0; m < meshes.size(); m++) {
         auto& mesh = meshes[m];

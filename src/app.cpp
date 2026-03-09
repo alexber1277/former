@@ -229,7 +229,7 @@ void App::LoadShaders() {
 }
 
 void App::LoadMeshes() {
-    auto newMeshes = Mesh::LoadMeshes("assets/floore.obj", meshes.size());
+    auto newMeshes = Mesh::LoadMeshes("assets/floore001.obj", meshes.size());
     size_t baseIndex = meshes.size();
     meshes.insert(meshes.end(), newMeshes.begin(), newMeshes.end());
     for (size_t i = baseIndex; i < meshes.size(); ++i) {
@@ -248,7 +248,6 @@ void App::LoadMeshAsset(const std::string& path) {
         meshes[i].AttachMaterial(shader->MeshShader);
         meshes[i].UpdateInstances();
     }
-    //printf("meshes: %zu\n", meshes.size());
 }
 
 void App::CalcFPS() {
@@ -552,10 +551,8 @@ int App::StartedRT() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         PreCalculate();
-        // ==========================================
-
         DrawMeshes();
-
+        // ==========================================
         if (!DrawGizmo()) {
             DrawPicking();
             DrawHover();
@@ -564,13 +561,14 @@ int App::StartedRT() {
             MirrorSelect();
             FocusSelected();
         }
-
-        gui->RenderPanels();
-
         // ==========================================
+        gui->RenderPanels();
         PostCalculate();
         glfwSwapBuffers(window);
     }
 
     return 0;
 }
+
+
+
