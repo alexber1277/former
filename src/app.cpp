@@ -328,82 +328,52 @@ void App::SnapSelectedVertex(float eps) {
     }
 }
 
-glm::vec3 App::GetSpawnPosition()
-{
+glm::vec3 App::GetSpawnPosition() {
     glm::vec3 rayOrigin = camera->position;
     glm::vec3 rayDir = glm::normalize(camera->target - camera->position);
-
     float bestDist = FLT_MAX;
     glm::vec3 hitPos;
     bool hit = false;
-
-    for (auto& mesh : meshes)
-    {
-        for (auto& inst : mesh.instances)
-        {
+    for (auto& mesh : meshes) {
+        for (auto& inst : mesh.instances) {
             glm::vec3 min(FLT_MAX);
             glm::vec3 max(-FLT_MAX);
-
-            for (auto& v : mesh.vertices)
-            {
-                glm::vec3 w =
-                    glm::vec3(inst.model * glm::vec4(v.position,1));
-
+            for (auto& v : mesh.vertices) {
+                glm::vec3 w = glm::vec3(inst.model * glm::vec4(v.position,1));
                 min = glm::min(min, w);
                 max = glm::max(max, w);
             }
-
             float tmin = 0.0f;
             float tmax = 1000.0f;
-
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
                 float invD = 1.0f / rayDir[i];
-
                 float t0 = (min[i] - rayOrigin[i]) * invD;
                 float t1 = (max[i] - rayOrigin[i]) * invD;
-
                 if (invD < 0.0f)
                     std::swap(t0, t1);
-
                 tmin = t0 > tmin ? t0 : tmin;
                 tmax = t1 < tmax ? t1 : tmax;
-
                 if (tmax <= tmin)
                     goto nextInstance;
             }
-
-            if (tmin < bestDist && tmin > 0.0f)
-            {
+            if (tmin < bestDist && tmin > 0.0f) {
                 bestDist = tmin;
                 hitPos = rayOrigin + rayDir * tmin;
                 hit = true;
             }
-
             nextInstance:;
         }
     }
-
-    // --- если есть пересечение ---
     if (hit)
         return hitPos;
-
-    // --- если пересечения нет ---
-    if (camera->position.z < 0.0f)
-    {
+    if (camera->position.z < 0.0f) {
         return rayOrigin + rayDir * 5.0f;
-    }
-    else
-    {
-        // пересечение луча с плоскостью Z = 0
+    } else {
         if (fabs(rayDir.z) < 0.00001f)
             return rayOrigin + rayDir * 5.0f;
-
         float t = -rayOrigin.z / rayDir.z;
-
         if (t > 0.0f)
             return rayOrigin + rayDir * t;
-
         return rayOrigin + rayDir * 5.0f;
     }
 }
@@ -688,32 +658,53 @@ void App::FocusSelected() {
     }
     glm::vec3 min(FLT_MAX);
     glm::vec3 max(-FLT_MAX);
-    bool found = false;
+    bool hasInstances = false;
+    bool hasSelected  = false;
     for (auto& mesh : meshes) {
         for (auto& inst : mesh.instances) {
-            if (inst.selected == 0) continue;
-            found = true;
+            hasInstances = true;
+            if (inst.selected == 0)
+                continue;
+            hasSelected = true;
             for (auto& vertex : mesh.vertices) {
-                glm::vec3 worldPos = glm::vec3(inst.model * glm::vec4(vertex.position, 1.0f));
-                min = glm::min(min, worldPos);
-                max = glm::max(max, worldPos);
+                glm::vec3 w = glm::vec3(inst.model * glm::vec4(vertex.position,1));
+                min = glm::min(min,w);
+                max = glm::max(max,w);
             }
         }
     }
-    if (!found) return;
+    if (!hasSelected && hasInstances) {
+        min = glm::vec3(FLT_MAX);
+        max = glm::vec3(-FLT_MAX);
+        for (auto& mesh : meshes) {
+            for (auto& inst : mesh.instances) {
+                for (auto& vertex : mesh.vertices) {
+                    glm::vec3 w = glm::vec3(inst.model * glm::vec4(vertex.position,1));
+                    min = glm::min(min,w);
+                    max = glm::max(max,w);
+                }
+            }
+        }
+    }
+    if (!hasInstances) {
+        camera->position = {-130.0f, -130.0f, 90.0f};
+        camera->target   = {0.0f, 0.0f, 0.0f};
+        zPressedLastFrame = zPressedNow;
+        return;
+    }
     glm::vec3 center = (min + max) * 0.5f;
     glm::vec3 offset = camera->position - camera->target;
     float oldDistance = glm::length(offset);
     if (oldDistance < 0.001f)
-        offset = glm::vec3(0.0f, 0.0f, -1.0f) * 5.0f;
+        offset = glm::vec3(0,0,-1) * 5.0f;
     else
         offset = glm::normalize(offset) * oldDistance;
     camera->target = center;
-    camera->position = center + offset;
     glm::vec3 size = max - min;
     float radius = glm::length(size) * 0.5f;
     if (radius > 0.001f) {
-        float distance = radius / tan(glm::radians(camera->fov * 0.5f));
+        float distance =
+            radius / tan(glm::radians(camera->fov * 0.5f));
         distance = glm::max(distance, 0.1f);
         camera->position = center + glm::normalize(offset) * distance;
     }
