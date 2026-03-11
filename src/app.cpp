@@ -237,6 +237,29 @@ void App::LoadMeshes() {
     }
 }
 
+void App::SelectInstanceMesh(int indexMesh, int indexInst) {
+    for (auto& mesh : meshes) {
+        for (auto& inst : mesh.instances) {
+            inst.selected = 0.0f;
+        }
+    }
+    gizmoMesh = nullptr;
+    gizmoInstance = -1;
+    if (indexMesh < 0 || indexMesh >= (int)meshes.size()) {
+        return;
+    }
+    Mesh& mesh = meshes[indexMesh];
+    if (indexInst < 0 || indexInst >= (int)mesh.instances.size()) {
+        return;
+    }
+    mesh.instances[indexInst].selected = 1.0f;
+    gizmoMesh = &mesh;
+    gizmoInstance = indexInst;
+    for (auto& m : meshes) {
+        m.UpdateInstances();
+    }
+}
+
 void App::LoadMeshAsset(const std::string& path) {
     auto newMeshes = Mesh::LoadMeshes(path, meshes.size());
     size_t baseIndex = meshes.size();
@@ -246,6 +269,7 @@ void App::LoadMeshAsset(const std::string& path) {
         meshes[i].AttachMaterial(shader->MeshShader);
         meshes[i].UpdateInstances();
     }
+    SelectInstanceMesh(meshes.size()-2, 0);
 }
 
 void App::CalcFPS() {
@@ -445,6 +469,7 @@ void App::CheckSelect() {
     for (auto& m : meshes) {
         m.UpdateInstances();
     }
+    SelectedAdd = false;
 }
 
 void App::DeleteSelected() {
@@ -567,8 +592,3 @@ int App::StartedRT() {
 
     return 0;
 }
-
-
-
-
-

@@ -40,6 +40,7 @@ class App {
 
         std::vector<Mesh>& GetMeshes();
 
+        void SelectInstanceMesh(int indexMesh, int indexInst);
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);
 
@@ -48,6 +49,7 @@ class App {
 
         int SelectedMesh = 0;
         int SelectedInstance = 0;
+        bool SelectedAdd = false;
 
         std::string fps;
 
