@@ -367,14 +367,14 @@ glm::vec3 App::GetSpawnPosition() {
     if (hit)
         return hitPos;
     if (camera->position.z < 0.0f) {
-        return rayOrigin + rayDir * 5.0f;
+        return rayOrigin + rayDir * 50.0f;
     } else {
         if (fabs(rayDir.z) < 0.00001f)
-            return rayOrigin + rayDir * 5.0f;
+            return rayOrigin + rayDir * 50.0f;
         float t = -rayOrigin.z / rayDir.z;
         if (t > 0.0f)
             return rayOrigin + rayDir * t;
-        return rayOrigin + rayDir * 5.0f;
+        return rayOrigin + rayDir * 50.0f;
     }
 }
 
