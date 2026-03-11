@@ -41,8 +41,11 @@ void Gui::AssetsList() {
         }
         if (ImGui::IsItemHovered()) {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-            ImGui::BeginTooltip();
+            ImVec2 mouse = ImGui::GetMousePos();
             float previewSize = 300.0f;
+            ImVec2 tooltipPos(mouse.x - previewSize * 0.5f, mouse.y - previewSize - 40.0f);
+            ImGui::SetNextWindowPos(tooltipPos, ImGuiCond_Always);
+            ImGui::BeginTooltip();
             ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex, ImVec2(previewSize, previewSize));
             std::string tooltipName = std::filesystem::path(asset.name).filename().string();
             ImGui::Text("%s", tooltipName.c_str());
