@@ -260,6 +260,74 @@ void App::SelectInstanceMesh(int indexMesh, int indexInst) {
     }
 }
 
+void App::SnapSelectedVertex(float eps) {
+    if (!gizmoMesh) return;
+    if (gizmoInstance < 0) return;
+    if (gizmoInstance >= gizmoMesh->instances.size()) return;
+    Mesh& mesh = *gizmoMesh;
+    MeshInstance& inst = mesh.instances[gizmoInstance];
+    const float borderEps = 0.0001f;
+    glm::vec3 min = mesh.vertices[0].position;
+    glm::vec3 max = mesh.vertices[0].position;
+    for (auto& v : mesh.vertices) {
+        min = glm::min(min, v.position);
+        max = glm::max(max, v.position);
+    }
+    std::vector<glm::vec3> selectedBorder;
+    for (auto& v : mesh.vertices) {
+        const glm::vec3& p = v.position;
+        bool border =
+            fabs(p.x - min.x) < borderEps ||
+            fabs(p.x - max.x) < borderEps ||
+            fabs(p.y - min.y) < borderEps ||
+            fabs(p.y - max.y) < borderEps ||
+            fabs(p.z - min.z) < borderEps ||
+            fabs(p.z - max.z) < borderEps;
+        if (!border) continue;
+        selectedBorder.push_back(glm::vec3(inst.model * glm::vec4(p,1)));
+    }
+    for (auto& m : meshes) {
+        glm::vec3 min2 = m.vertices[0].position;
+        glm::vec3 max2 = m.vertices[0].position;
+        for (auto& v : m.vertices) {
+            min2 = glm::min(min2, v.position);
+            max2 = glm::max(max2, v.position);
+        }
+        for (auto& otherInst : m.instances) {
+            if (&m == &mesh && &otherInst == &inst)
+                continue;
+            int matchCount = 0;
+            glm::vec3 snapDelta(0);
+            for (auto& ov : m.vertices) {
+                const glm::vec3& p2 = ov.position;
+                bool border2 =
+                    fabs(p2.x - min2.x) < borderEps ||
+                    fabs(p2.x - max2.x) < borderEps ||
+                    fabs(p2.y - min2.y) < borderEps ||
+                    fabs(p2.y - max2.y) < borderEps ||
+                    fabs(p2.z - min2.z) < borderEps ||
+                    fabs(p2.z - max2.z) < borderEps;
+                if (!border2) continue;
+                glm::vec3 worldB = glm::vec3(otherInst.model * glm::vec4(p2,1));
+                for (auto& worldA : selectedBorder) {
+                    glm::vec3 d = worldB - worldA;
+                    if (fabs(d.x) < eps && fabs(d.y) < eps && fabs(d.z) < eps) {
+                        matchCount++;
+                        if (matchCount == 1)
+                            snapDelta = d;
+                        if (matchCount >= 2) {
+                            inst.position += snapDelta;
+                            inst.UpdateModel();
+                            mesh.UpdateInstance(gizmoInstance);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void App::LoadMeshAsset(const std::string& path) {
     auto newMeshes = Mesh::LoadMeshes(path, meshes.size());
     size_t baseIndex = meshes.size();
@@ -427,6 +495,7 @@ bool App::DrawGizmo() {
                 }
             }
         }
+        SnapSelectedVertex(0.2);
         statMove = true;
     } else {
         duplicated = false;
