@@ -328,15 +328,98 @@ void App::SnapSelectedVertex(float eps) {
     }
 }
 
+glm::vec3 App::GetSpawnPosition()
+{
+    glm::vec3 rayOrigin = camera->position;
+    glm::vec3 rayDir = glm::normalize(camera->target - camera->position);
+
+    float bestDist = FLT_MAX;
+    glm::vec3 hitPos;
+    bool hit = false;
+
+    for (auto& mesh : meshes)
+    {
+        for (auto& inst : mesh.instances)
+        {
+            glm::vec3 min(FLT_MAX);
+            glm::vec3 max(-FLT_MAX);
+
+            for (auto& v : mesh.vertices)
+            {
+                glm::vec3 w =
+                    glm::vec3(inst.model * glm::vec4(v.position,1));
+
+                min = glm::min(min, w);
+                max = glm::max(max, w);
+            }
+
+            float tmin = 0.0f;
+            float tmax = 1000.0f;
+
+            for (int i = 0; i < 3; i++)
+            {
+                float invD = 1.0f / rayDir[i];
+
+                float t0 = (min[i] - rayOrigin[i]) * invD;
+                float t1 = (max[i] - rayOrigin[i]) * invD;
+
+                if (invD < 0.0f)
+                    std::swap(t0, t1);
+
+                tmin = t0 > tmin ? t0 : tmin;
+                tmax = t1 < tmax ? t1 : tmax;
+
+                if (tmax <= tmin)
+                    goto nextInstance;
+            }
+
+            if (tmin < bestDist && tmin > 0.0f)
+            {
+                bestDist = tmin;
+                hitPos = rayOrigin + rayDir * tmin;
+                hit = true;
+            }
+
+            nextInstance:;
+        }
+    }
+
+    // --- если есть пересечение ---
+    if (hit)
+        return hitPos;
+
+    // --- если пересечения нет ---
+    if (camera->position.z < 0.0f)
+    {
+        return rayOrigin + rayDir * 5.0f;
+    }
+    else
+    {
+        // пересечение луча с плоскостью Z = 0
+        if (fabs(rayDir.z) < 0.00001f)
+            return rayOrigin + rayDir * 5.0f;
+
+        float t = -rayOrigin.z / rayDir.z;
+
+        if (t > 0.0f)
+            return rayOrigin + rayDir * t;
+
+        return rayOrigin + rayDir * 5.0f;
+    }
+}
+
 void App::LoadMeshAsset(const std::string& path) {
     auto newMeshes = Mesh::LoadMeshes(path, meshes.size());
     size_t baseIndex = meshes.size();
     meshes.insert(meshes.end(), newMeshes.begin(), newMeshes.end());
+    glm::vec3 spawnPos = GetSpawnPosition();
     for (size_t i = baseIndex; i < meshes.size(); ++i) {
         meshes[i].SetCamPos(shader->MeshShader);
         meshes[i].AttachMaterial(shader->MeshShader);
         meshes[i].UpdateInstances();
     }
+    meshes[meshes.size()-2].instances[0].position = spawnPos;
+    meshes[meshes.size()-2].UpdateInstance(0);
     SelectInstanceMesh(meshes.size()-2, 0);
 }
 

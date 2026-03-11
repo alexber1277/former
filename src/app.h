@@ -44,6 +44,8 @@ class App {
         Mesh& GetMeshByIndex(size_t index);
         bool LoadShaderItem(const std::string& name, GLuint& program);
         void SnapSelectedVertex(float maxDist);
+        glm::vec3 GetSpawnPosition();
+
 
         static void Resize(GLFWwindow* wind, int width, int height);
         std::string LoadFile(std::string name);
