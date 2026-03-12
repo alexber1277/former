@@ -10,7 +10,7 @@ std::vector<Mesh> Mesh::LoadMeshes(const std::string& path, int sizeMesh) {
     const aiScene* scene = importer.ReadFile(
         path,
         aiProcess_Triangulate |
-        aiProcess_JoinIdenticalVertices |
+        //aiProcess_JoinIdenticalVertices |
         aiProcess_GlobalScale
     );
     if (!scene || !scene->HasMeshes())
