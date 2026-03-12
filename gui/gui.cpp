@@ -30,11 +30,12 @@ void Gui::AssetsList() {
     float panelWidth = ImGui::GetContentRegionAvail().x;
     int columns = (int)(panelWidth / cellSize);
     if (columns < 1) columns = 1;
-    ImGui::Columns(columns, 0, false);
     const int maxNameLen = 8;
+    int columnIndex = 0;
     for (size_t i = 0; i < Assets.size(); i++) {
         auto& asset = Assets[i];
         ImGui::PushID((int)i);
+        ImGui::BeginGroup();
         ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex, ImVec2(iconSize, iconSize));
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
             app->LoadMeshAsset(asset.path);
@@ -56,10 +57,14 @@ void Gui::AssetsList() {
             displayName = displayName.substr(0, maxNameLen - 3) + "...";
         }
         ImGui::TextWrapped("%s", displayName.c_str());
-        ImGui::NextColumn();
+        ImGui::EndGroup();
         ImGui::PopID();
+        columnIndex++;
+        if (columnIndex < columns)
+            ImGui::SameLine();
+        if (columnIndex >= columns)
+            columnIndex = 0;
     }
-    ImGui::Columns(1);
     ImGui::End();
 }
 
