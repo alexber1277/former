@@ -43,8 +43,9 @@ class Gui {
         ImGuiWindowFlags baseFlags =
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize   |
-            ImGuiWindowFlags_NoScrollbar;
+            ImGuiWindowFlags_NoResize   //|
+            //ImGuiWindowFlags_NoScrollbar
+        ;
 
         void SetupStyle() {
             ImGuiStyle& style = ImGui::GetStyle();
