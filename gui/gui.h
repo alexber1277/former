@@ -67,8 +67,8 @@ class Gui {
             s.WindowBorderSize = 0.0f;
             s.FrameBorderSize = 0.0f;
             s.WindowPadding = ImVec2(8, 6);
-            s.FramePadding = ImVec2(8, 4);
-            s.ItemSpacing = ImVec2(6, 4);
+            s.FramePadding = ImVec2(5, 5);
+            s.ItemSpacing = ImVec2(10, 10);
             s.ItemInnerSpacing = ImVec2(6, 4);
             ImVec4* c = s.Colors;
             c[ImGuiCol_WindowBg]           = ImVec4(0.10f,0.10f,0.11f,1.00f);

@@ -58,14 +58,18 @@ void Gui::NewMesh() {
 }
 
 void Gui::GeometryList() {
-    ImGui::Separator();
     ImGui::BeginChild("SceneList", ImVec2(0,200), false);
-    auto sceneInstances = app->GetMeshes();
-    for (size_t i = 0; i < sceneInstances.size(); i++) {
-        auto& inst = sceneInstances[i];
-        //bool selected = (selectedInstance == i);
-        if (ImGui::Selectable(inst.name.c_str(), 0.0f)) {
-            //selectedInstance = i;
+    ImGui::Dummy(ImVec2(0.0f, 0.0f));
+    auto meshes = app->GetMeshes();
+    for (size_t meshIdx = 0; meshIdx < meshes.size(); meshIdx++){
+        auto& mesh = meshes[meshIdx];
+        for (size_t i = 0; i < mesh.instances.size(); i++){
+            auto& inst = mesh.instances[i];
+            bool selected = (inst.selected >= 1);
+            std::string label = " "+mesh.name + "[" +std::to_string(meshIdx) + "-" +std::to_string(i) + "]";
+            if (ImGui::Selectable(label.c_str(), selected)) {
+                app->SelectInstanceMesh(mesh.ID, i);
+            }
         }
     }
     ImGui::EndChild();
@@ -75,8 +79,11 @@ void Gui::AssetWindow() {
     ImGuiIO& io = ImGui::GetIO();
     ImVec2 center(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
     ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(1200, 800), ImGuiCond_Always);
     if (ImGui::Begin("Assets", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        if (!ImGui::IsWindowFocused()) {
+            showAssets = false;
+        }
         ImGui::Dummy(ImVec2(0.0f, 10.0f));
         ImGui::BeginChild("AssetGrid", ImVec2(0,0), false);
         float padding = 16.0f;
