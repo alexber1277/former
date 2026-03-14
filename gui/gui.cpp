@@ -16,7 +16,33 @@ void Gui::EndFrame() {
 }
 
 void Gui::RenderPanels() {
-    AssetsList();
+    Entities();
+}
+
+void Gui::Entities() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, 35), ImGuiCond_Always);
+    ImGui::Begin("entities", nullptr, baseFlags);
+    const char* b1 = "Geometry";
+    const char* b2 = "Materials";
+    float buttonHeight = ImGui::GetFrameHeight();
+    float offsetY = (ImGui::GetWindowHeight() - buttonHeight) * 0.5f;
+    ImGui::SetCursorPosY(offsetY);
+    ImVec2 s1 = ImGui::CalcTextSize(b1);
+    ImVec2 s2 = ImGui::CalcTextSize(b2);
+    float padding = ImGui::GetStyle().FramePadding.x * 2.0f;
+    float w1 = s1.x + padding;
+    float w2 = s2.x + padding;
+    float spacing = ImGui::GetStyle().ItemSpacing.x;
+    float totalWidth = w1 + spacing + w2;
+    float avail = ImGui::GetContentRegionAvail().x;
+    float offsetX = (avail - totalWidth) * 0.5f;
+    ImGui::SetCursorPosX(offsetX);
+    ImGui::Button(b1);
+    ImGui::SameLine();
+    ImGui::Button(b2);
+    ImGui::End();
 }
 
 void Gui::AssetsList() {

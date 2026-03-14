@@ -28,6 +28,8 @@ class Gui {
         void Explorer();
         void RenderPanels();
         void AssetsList();
+        void ObjectList();
+        void Entities();
         void SetPointer(App* appTs) {
             app = appTs;
         };
@@ -43,9 +45,8 @@ class Gui {
         ImGuiWindowFlags baseFlags =
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize   //|
-            //ImGuiWindowFlags_NoScrollbar
-        ;
+            ImGuiWindowFlags_NoResize   |
+            ImGuiWindowFlags_NoScrollbar;
 
         void SetupStyle() {
             ImGuiStyle& style = ImGui::GetStyle();

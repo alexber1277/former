@@ -467,10 +467,14 @@ void App::PreCalculate() {
     CalcFPS();
     std::string title = nameApp + " [BETA][" + fps+ " FPS]";
     glfwSetWindowTitle(window, title.c_str());
-    input->Update();
-    input->Handlers(camera);
-    camera->CamCalculated(ScreenWidth,ScreenHeight);
     gui->StartFrame();
+    ImGuiIO& io = ImGui::GetIO();
+    if (!io.WantCaptureMouse) {
+        input->Update();
+        ChangeSnap();
+        input->Handlers(camera);
+        camera->CamCalculated(ScreenWidth,ScreenHeight);
+    }
     Cleared();
     DrawGrid();
 }
@@ -548,7 +552,9 @@ bool App::DrawGizmo() {
                 }
             }
         }
-        SnapSelectedVertex(0.2);
+        if (Snapping) {
+            SnapSelectedVertex(0.2);
+        }
         statMove = true;
     } else {
         duplicated = false;
@@ -711,6 +717,17 @@ void App::FocusSelected() {
     zPressedLastFrame = zPressedNow;
 }
 
+void App::ChangeSnap() {
+    static bool duplicated = false;
+    if (input->IsKeyDown(GLFW_KEY_A) && !duplicated) {
+        Snapping = !Snapping;
+        duplicated = true;
+    }
+    if (!input->IsKeyDown(GLFW_KEY_A) && duplicated) {
+        duplicated = false;
+    }
+}
+
 int App::StartedRT() {
     gui->SetPointer(this);
     glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
@@ -732,9 +749,6 @@ int App::StartedRT() {
         PostCalculate();
         glfwSwapBuffers(window);
     }
-
     return 0;
 }
-
-
 

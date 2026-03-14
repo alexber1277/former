@@ -26,6 +26,8 @@ class App {
         void Cleared();
         void DrawGrid();
 
+        void ChangeSnap();
+
         void CheckSelect();
         bool DrawGizmo();
 
@@ -53,6 +55,7 @@ class App {
         int SelectedMesh = 0;
         int SelectedInstance = 0;
         bool SelectedAdd = false;
+        bool Snapping = false;
 
         std::string fps;
 
