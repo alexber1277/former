@@ -39,6 +39,10 @@ void Gui::RightPanel() {
         if (ImGui::BeginTabItem("GEOMETRY")) {
             NewMesh();
             GeometryList();
+            if (app->gizmoMesh) {
+                ShowPropertyObject();
+                ShowMaterialsObject();
+            }
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("MATERIALS")) {
@@ -48,6 +52,49 @@ void Gui::RightPanel() {
         ImGui::EndTabBar();
     }
     ImGui::End();
+}
+
+void Gui::ShowMaterialsObject() {
+    if (!app->gizmoMesh) {
+        return;
+    }
+    if (app->gizmoInstance < 0 || (size_t)app->gizmoInstance >= app->gizmoMesh->instances.size()) {
+        return;
+    }
+    ImGui::SeparatorText("Materials");
+}
+
+void Gui::ShowPropertyObject() {
+    if (!app->gizmoMesh) {
+        return;
+    }
+    if (app->gizmoInstance < 0 || (size_t)app->gizmoInstance >= app->gizmoMesh->instances.size()) {
+        return;
+    }
+    auto& inst = app->gizmoMesh->instances[app->gizmoInstance];
+    glm::vec3 pos   = inst.position;
+    glm::vec3 rot   = inst.rotation;
+    glm::vec3 scale = inst.scale;
+    bool changed = false;
+    ImGui::SeparatorText("Transform");
+    changed |= ImGui::DragFloat3("Position", &pos.x, 0.1f);
+    changed |= ImGui::DragFloat3("Rotation", &rot.x, 0.5f);
+    changed |= ImGui::DragFloat3("Scale", &scale.x, 0.1f);
+    if (ImGui::Button("Reset", ImVec2(-FLT_MIN, 0))) {
+        pos = glm::vec3(0.0f);
+        rot = glm::vec3(0.0f);
+        scale = glm::vec3(1.0f);
+        inst.position = pos;
+        inst.rotation = rot;
+        inst.scale    = scale;
+        app->gizmoMesh->UpdateInstance(app->gizmoInstance);
+    }
+    if (changed) {
+        inst.position = pos;
+        inst.rotation = rot;
+        inst.scale    = scale;
+        app->gizmoMesh->UpdateInstance(app->gizmoInstance);
+    }
 }
 
 void Gui::NewMesh() {
@@ -81,9 +128,7 @@ void Gui::AssetWindow() {
     ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(1200, 800), ImGuiCond_Always);
     if (ImGui::Begin("Assets", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-        if (!ImGui::IsWindowFocused()) {
-            showAssets = false;
-        }
+        if (!ImGui::IsWindowFocused()) { showAssets = false; }
         ImGui::Dummy(ImVec2(0.0f, 10.0f));
         ImGui::BeginChild("AssetGrid", ImVec2(0,0), false);
         float padding = 16.0f;

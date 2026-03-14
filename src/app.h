@@ -59,6 +59,9 @@ class App {
 
         std::string fps;
 
+        Mesh* gizmoMesh;
+        int gizmoInstance;
+
         ~App();
     private:
         void Log(const std::string& msg);
@@ -87,8 +90,4 @@ class App {
         std::string nameApp = "RTNV";
 
         double lastTitleUpdate = 0;
-
-        Mesh* gizmoMesh;
-        int gizmoInstance;
-
 };

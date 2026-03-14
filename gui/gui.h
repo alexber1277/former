@@ -34,6 +34,8 @@ class Gui {
         void NewMesh();
         void SetHandCursorIfHovered();
         void AssetWindow();
+        void ShowPropertyObject();
+        void ShowMaterialsObject();
         void SetPointer(App* appTs) {
             app = appTs;
         };
