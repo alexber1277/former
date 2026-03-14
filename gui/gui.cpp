@@ -16,33 +16,127 @@ void Gui::EndFrame() {
 }
 
 void Gui::RenderPanels() {
-    Entities();
+    RightPanel();
+    if (showAssets) {
+        AssetWindow();
+    }
+
 }
 
-void Gui::Entities() {
+void Gui::RightPanel() {
     ImGuiIO& io = ImGui::GetIO();
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, 35), ImGuiCond_Always);
-    ImGui::Begin("entities", nullptr, baseFlags);
-    const char* b1 = "Geometry";
-    const char* b2 = "Materials";
-    float buttonHeight = ImGui::GetFrameHeight();
-    float offsetY = (ImGui::GetWindowHeight() - buttonHeight) * 0.5f;
-    ImGui::SetCursorPosY(offsetY);
-    ImVec2 s1 = ImGui::CalcTextSize(b1);
-    ImVec2 s2 = ImGui::CalcTextSize(b2);
-    float padding = ImGui::GetStyle().FramePadding.x * 2.0f;
-    float w1 = s1.x + padding;
-    float w2 = s2.x + padding;
-    float spacing = ImGui::GetStyle().ItemSpacing.x;
-    float totalWidth = w1 + spacing + w2;
-    float avail = ImGui::GetContentRegionAvail().x;
-    float offsetX = (avail - totalWidth) * 0.5f;
-    ImGui::SetCursorPosX(offsetX);
-    ImGui::Button(b1);
-    ImGui::SameLine();
-    ImGui::Button(b2);
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x-300, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(300, io.DisplaySize.y), ImGuiCond_Always);
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoSavedSettings;
+    ImGui::Begin("right_panel", nullptr, flags);
+    if (ImGui::BeginTabBar("right_tabs")){
+        if (ImGui::BeginTabItem("GEOMETRY")) {
+            NewMesh();
+            GeometryList();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("MATERIALS")) {
+            MaterialList();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
     ImGui::End();
+}
+
+void Gui::NewMesh() {
+    if (ImGui::Button("Add geometry", ImVec2(-FLT_MIN, 0))) {
+        showAssets = true;
+    }
+    SetHandCursorIfHovered();
+}
+
+void Gui::GeometryList() {
+    ImGui::Separator();
+    ImGui::BeginChild("SceneList", ImVec2(0,200), false);
+    auto sceneInstances = app->GetMeshes();
+    for (size_t i = 0; i < sceneInstances.size(); i++) {
+        auto& inst = sceneInstances[i];
+        //bool selected = (selectedInstance == i);
+        if (ImGui::Selectable(inst.name.c_str(), 0.0f)) {
+            //selectedInstance = i;
+        }
+    }
+    ImGui::EndChild();
+}
+
+void Gui::AssetWindow() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImVec2 center(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_Always);
+    if (ImGui::Begin("Assets", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+        ImGui::BeginChild("AssetGrid", ImVec2(0,0), false);
+        float padding = 16.0f;
+        float cellWidth  = iconSize + padding;
+        float cellHeight = iconSize + 30.0f;
+        float panelWidth = ImGui::GetContentRegionAvail().x;
+        int columns = (int)(panelWidth / cellWidth);
+        if (columns < 1) columns = 1;
+        const int maxNameLen = 12;
+        int columnIndex = 0;
+        for (size_t i = 0; i < Assets.size(); i++) {
+            auto& asset = Assets[i];
+            ImGui::PushID((int)i);
+            ImGui::BeginChild("cell", ImVec2(cellWidth, cellHeight), false);
+            float iconOffset = (cellWidth - iconSize) * 0.5f;
+            ImGui::SetCursorPosX(iconOffset);
+            ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex,ImVec2(iconSize, iconSize));
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                app->LoadMeshAsset(asset.path);
+                showAssets = false;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                float previewSize = 300.0f;
+                ImGui::BeginTooltip();
+                ImGui::Image((ImTextureID)(intptr_t)asset.thumbnailTex,ImVec2(previewSize, previewSize));
+                std::string tooltipName =
+                    std::filesystem::path(asset.name).filename().string();
+                ImGui::Text("%s", tooltipName.c_str());
+                ImGui::EndTooltip();
+            }
+            std::string displayName =
+                std::filesystem::path(asset.name).filename().string();
+            if (displayName.length() > maxNameLen)
+                displayName = displayName.substr(0, maxNameLen - 3) + "...";
+            float textWidth = ImGui::CalcTextSize(displayName.c_str()).x;
+            float textOffset = (cellWidth - textWidth) * 0.5f;
+            if (textOffset < 4.0f) textOffset = 4.0f;
+            ImGui::SetCursorPosX(textOffset);
+            ImGui::Text("%s", displayName.c_str());
+            ImGui::EndChild();
+            ImGui::PopID();
+            columnIndex++;
+            if (columnIndex < columns)
+                ImGui::SameLine();
+            else
+                columnIndex = 0;
+        }
+        ImGui::EndChild();
+    }
+    ImGui::End();
+}
+
+void Gui::MaterialList() {
+    ImGui::Text("Materials");
+}
+
+void Gui::SetHandCursorIfHovered() {
+    if (ImGui::IsItemHovered())
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 }
 
 void Gui::AssetsList() {

@@ -563,7 +563,8 @@ bool App::DrawGizmo() {
 }
 
 void App::CheckSelect() {
-    if (!input->ClickLeftMouse()) {
+    ImGuiIO& io = ImGui::GetIO();
+    if (!input->ClickLeftMouse() || io.WantCaptureMouse) {
         return;
     }
     bool ctrl = input->IsPressCtrl();
