@@ -53,6 +53,8 @@ set(SOURCES
         library/library.h
         gl/stb.cpp
         gl/stb_image.h
+        materials/material.cpp
+        materials/material.h
 )
 
 list(APPEND SOURCES

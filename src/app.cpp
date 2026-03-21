@@ -224,6 +224,9 @@ void App::LoadShaders() {
     shader->InitializeUniformsSelect();
     shader->CreatePickingFramebuffer(ScreenWidth, ScreenHeight);
     library->PreviewShader = shader->MeshShader;
+    Material mat = Material("baseHeight");
+    mat.CreateDefaultHeightMap(shader->MeshShader, 128,128);
+    materials.push_back(mat);
 }
 
 void App::LoadMeshes() {
@@ -424,6 +427,7 @@ void App::Cleared() {
 void App::DrawMeshes() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     for (auto& mesh : meshes) {
+        mesh.mat = &materials[0];
         mesh.Draw(shader->MeshShader,shader->MeshCameraProjection, camera);
     }
 }
@@ -468,8 +472,7 @@ void App::PreCalculate() {
     std::string title = nameApp + " [BETA][" + fps+ " FPS]";
     glfwSetWindowTitle(window, title.c_str());
     gui->StartFrame();
-    ImGuiIO& io = ImGui::GetIO();
-    if (!io.WantCaptureMouse) {
+    if (!gui->io->WantCaptureMouse) {
         input->Update();
         ChangeSnap();
         input->Handlers(camera);
@@ -482,8 +485,7 @@ void App::PreCalculate() {
 bool App::DrawGizmo() {
     bool statMove = false;
     ImGuizmo::BeginFrame();
-    ImGuiIO& io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::SetRect(0, 0, ScreenWidth, ScreenHeight);
     if (input->IsKeyDown(GLFW_KEY_W)) operation = ImGuizmo::TRANSLATE;
     if (input->IsKeyDown(GLFW_KEY_E)) operation = ImGuizmo::ROTATE;
     if (input->IsKeyDown(GLFW_KEY_R)) operation = ImGuizmo::SCALE;
@@ -563,8 +565,7 @@ bool App::DrawGizmo() {
 }
 
 void App::CheckSelect() {
-    ImGuiIO& io = ImGui::GetIO();
-    if (!input->ClickLeftMouse() || io.WantCaptureMouse) {
+    if (!input->ClickLeftMouse() || gui->io->WantCaptureMouse) {
         return;
     }
     bool ctrl = input->IsPressCtrl();
@@ -752,4 +753,8 @@ int App::StartedRT() {
     }
     return 0;
 }
+
+
+
+
 

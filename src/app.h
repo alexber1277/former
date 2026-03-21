@@ -7,6 +7,7 @@
 #include "../gui/gui.h"
 #include "../shaders/shader.h"
 #include "../library/library.h"
+#include "../materials/material.h"
 #include "ImGuizmo.h"
 
 class App {
@@ -60,7 +61,7 @@ class App {
         std::string fps;
 
         Mesh* gizmoMesh;
-        int gizmoInstance;
+        int gizmoInstance = -1;
 
         ~App();
     private:
@@ -76,6 +77,7 @@ class App {
         Library* library;
 
         std::vector<Mesh> meshes;
+        std::vector<Material> materials;
 
         ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 

@@ -205,6 +205,11 @@ void Mesh::Draw(GLuint shader, GLint viewProjLoc, Camera* camera) {
     glUniform4fv(MatAlbedo, 1, &MatAlbedoVal[0]);
     glUniform1f(MatRoughnes, MatRoughnesVal);
     glUniform1f(MatMetalic, MatMetalicVal);
+    if (mat && mat->HasHeight()) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mat->heightMap);
+        glUniform1i(mat->heightUniform, 0);
+    }
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES,indices.size() * 3,GL_UNSIGNED_INT,0,instances.size());
     glBindVertexArray(0);

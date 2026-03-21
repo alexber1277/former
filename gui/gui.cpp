@@ -24,9 +24,8 @@ void Gui::RenderPanels() {
 }
 
 void Gui::RightPanel() {
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x-300, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(300, io.DisplaySize.y), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x-300, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(300, io->DisplaySize.y), ImGuiCond_Always);
     ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoResize |
@@ -55,12 +54,12 @@ void Gui::RightPanel() {
 }
 
 void Gui::ShowMaterialsObject() {
-    if (!app->gizmoMesh) {
-        return;
-    }
-    if (app->gizmoInstance < 0 || (size_t)app->gizmoInstance >= app->gizmoMesh->instances.size()) {
-        return;
-    }
+    if (!app->gizmoMesh) { return; };
+    auto& mesh = app->gizmoMesh;
+    if (!mesh) return;
+    int instIndex = app->gizmoInstance;
+    if (instIndex < 0 || !app->gizmoMesh || (size_t)instIndex >= app->gizmoMesh->instances.size()) { return; }
+    MeshInstance inst = mesh->instances[instIndex];
     ImGui::SeparatorText("Materials");
 }
 
@@ -192,10 +191,9 @@ void Gui::SetHandCursorIfHovered() {
 }
 
 void Gui::AssetsList() {
-    ImGuiIO& io = ImGui::GetIO();
     float height = 200.0f;
-    ImGui::SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y - height), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0.0f, io->DisplaySize.y - height), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x, height), ImGuiCond_Always);
     ImGui::Begin("assets", nullptr, baseFlags);
     float padding  = 10.0f;
     float cellSize = iconSize + padding;

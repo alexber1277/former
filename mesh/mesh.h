@@ -3,6 +3,7 @@
 #include <vector>
 #include "../gl/glincludes.h"
 #include "../camera/camera.h"
+#include "../materials/material.h"
 
 struct MeshIndex;
 struct MeshVertex;
@@ -32,6 +33,9 @@ class Mesh {
         GLuint VBO;
         GLuint VAO;
         GLuint EBO;
+
+        // material
+        Material* mat;
 
         // binding GPU data
         GLuint InstanceVBO;

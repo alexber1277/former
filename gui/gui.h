@@ -10,15 +10,16 @@ class App;
 
 class Gui {
     public:
+        ImGuiIO* io;
         Gui(GLFWwindow* window) {
             m_Window = window;
             ImGui::CreateContext();
-            ImGuiIO& io = ImGui::GetIO();
+            io = &ImGui::GetIO();
             ImFontConfig cfg;
             cfg.OversampleH = 3;
             cfg.OversampleV = 3;
             cfg.PixelSnapH = false;
-            io.Fonts->AddFontFromFileTTF("fonts/arial.ttf",13.0f,&cfg);
+            io->Fonts->AddFontFromFileTTF("fonts/arial.ttf",13.0f,&cfg);
             ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
             ImGui_ImplOpenGL3_Init("#version 460 core");
             SetupStyle();
@@ -39,9 +40,7 @@ class Gui {
         void SetPointer(App* appTs) {
             app = appTs;
         };
-
         float iconSize = 60;
-
         std::vector<LibraryAsset> Assets;
 
     private:
